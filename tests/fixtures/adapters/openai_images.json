@@ -1,0 +1,34 @@
+{
+  "role": "image",
+  "adapter": "openai_images",
+  "config": {
+    "api_key": "k",
+    "model": "gpt-image-1"
+  },
+  "responses": {
+    "images.generate": {
+      "data": [
+        {
+          "b64_json": "$PNG_B64",
+          "url": null
+        }
+      ]
+    },
+    "images.edit": {
+      "data": [
+        {
+          "b64_json": "$PNG_B64",
+          "url": null
+        }
+      ]
+    }
+  },
+  "expect": {
+    "submit_status": "FINISHED",
+    "task_id_prefix": "file:",
+    "payload_contains": [
+      "gpt-image-1"
+    ]
+  },
+  "_note": "按 openai SDK images.generate/edit 签名手写；真实联调后替换"
+}

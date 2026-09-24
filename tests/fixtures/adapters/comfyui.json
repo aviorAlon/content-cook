@@ -1,0 +1,28 @@
+{
+  "role": "image",
+  "adapter": "comfyui",
+  "config": {
+    "base_url": "http://127.0.0.1:8188",
+    "model": "sd_xl_base_1.0.safetensors"
+  },
+  "http": [
+    {
+      "match": "/upload/image",
+      "json": {"name": "ref.png", "subfolder": "", "type": "input"}
+    },
+    {
+      "match": "/prompt",
+      "json": {"prompt_id": "3f0b1a8e-0000-4000-8000-000000000001", "number": 1, "node_errors": {}}
+    }
+  ],
+  "expect": {
+    "submit_status": "PENDING",
+    "task_id_prefix": "comfy:",
+    "payload_contains": [
+      "ref.png",
+      "client_id",
+      "LoadImage",
+      "\\u4e00\\u4e2a\\u4eba\\u7ad9\\u5728\\u7a97\\u524d"
+    ]
+  }
+}

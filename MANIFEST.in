@@ -1,0 +1,12 @@
+# pip 的 sdist 只带构建 wheel 要用的东西（src/ 下的包 + pyproject + README）。
+# setuptools 默认会把 tests/test*.py 塞进 sdist：测试、前端源码、文档、打包脚本、示例与数据文件一律不进。
+prune tests
+prune frontend
+prune docs
+prune desktop
+prune scripts
+prune examples
+prune skills
+prune content
+prune output
+global-exclude *.py[cod] __pycache__ .env .env.* *.db *.sqlite3 *.log

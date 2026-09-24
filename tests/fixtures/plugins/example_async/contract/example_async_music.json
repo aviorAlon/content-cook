@@ -1,0 +1,6 @@
+{
+  "role": "music",
+  "adapter": "example_async_music",
+  "config": {"model": "demo-music"},
+  "expect": {"task_id_prefix": "exasync-mus:", "final_status": "FINISHED", "count": 2, "duration": 90}
+}

@@ -1,0 +1,44 @@
+{
+  "role": "image",
+  "adapter": "sdwebui",
+  "config": {
+    "api_key": "",
+    "model": "sd_xl_base_1.0.safetensors",
+    "base_url": "http://127.0.0.1:7860"
+  },
+  "http": [
+    {
+      "match": "/sdapi/v1/options",
+      "json": {
+        "sd_model_checkpoint": "sd_xl_base_1.0.safetensors [31e35c80fc]"
+      }
+    },
+    {
+      "match": "/sdapi/v1/img2img",
+      "json": {
+        "images": ["$PNG_B64"],
+        "parameters": {},
+        "info": "{\"seed\": 1234, \"sampler_name\": \"DPM++ 2M Karras\"}"
+      }
+    },
+    {
+      "match": "/sdapi/v1/txt2img",
+      "json": {
+        "images": ["$PNG_B64"],
+        "parameters": {},
+        "info": "{\"seed\": 1234}"
+      }
+    }
+  ],
+  "expect": {
+    "submit_status": "FINISHED",
+    "task_id_prefix": "file:",
+    "payload_contains": [
+      "init_images",
+      "denoising_strength",
+      "sampler_name",
+      "1024",
+      "1824"
+    ]
+  }
+}

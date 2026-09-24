@@ -1,0 +1,40 @@
+{
+  "role": "video",
+  "adapter": "openai_video",
+  "config": {
+    "api_key": "k",
+    "model": "sora-2",
+    "base_url": "https://gateway.example/v1"
+  },
+  "http": [
+    {
+      "match": "/videos/vid_1/content",
+      "bytes": "$BYTES:MP4DATA"
+    },
+    {
+      "match": "/videos/vid_1",
+      "json": {
+        "id": "vid_1",
+        "status": "completed"
+      }
+    },
+    {
+      "match": "/videos",
+      "json": {
+        "id": "vid_1",
+        "status": "queued"
+      }
+    }
+  ],
+  "expect": {
+    "task_id_prefix": "oaivid:",
+    "final_status": "FINISHED",
+    "duration": 8,
+    "resolution": "720p",
+    "aspect_ratio": "9:16",
+    "payload_contains": [
+      "input_reference",
+      "720x1280"
+    ]
+  }
+}

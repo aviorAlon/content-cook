@@ -1,0 +1,25 @@
+{
+  "role": "image",
+  "adapter": "openrouter_images",
+  "config": {
+    "api_key": "k",
+    "model": "bytedance-seed/seedream-4.5"
+  },
+  "responses": {
+    "images.generate": {
+      "data": [
+        {
+          "b64_json": "$PNG_B64"
+        }
+      ]
+    }
+  },
+  "expect": {
+    "submit_status": "FINISHED",
+    "task_id_prefix": "file:",
+    "payload_contains": [
+      "data:image/png;base64",
+      "seedream"
+    ]
+  }
+}

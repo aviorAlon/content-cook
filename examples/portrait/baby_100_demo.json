@@ -1,0 +1,29 @@
+{
+  "title": "百天写真（示例）",
+  "template": "baby_100",
+  "subject": {
+    "kind": "photo",
+    "name": "宝宝",
+    "block": "",
+    "assets": [],
+    "fidelity": 90
+  },
+  "style": "studio_soft",
+  "options": {
+    "scenes": [
+      "百天蛋糕",
+      "数字气球",
+      "抓周预演",
+      "小马甲",
+      "趴姿抬头",
+      "全家福"
+    ],
+    "count_per_scene": 1,
+    "text": "百天快乐|2026.09.09",
+    "aspect": "3:4"
+  },
+  "image_params": {
+    "model": "@image",
+    "image_size": "2K"
+  }
+}

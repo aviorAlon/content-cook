@@ -1,0 +1,6 @@
+{
+  "role": "video",
+  "adapter": "example_async_video",
+  "config": {"model": "demo-video"},
+  "expect": {"task_id_prefix": "exasync-vid:", "final_status": "FINISHED", "duration": 6, "resolution": "720p"}
+}

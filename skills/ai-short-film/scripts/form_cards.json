@@ -1,0 +1,239 @@
+{
+  "_meta": {
+    "source": "derived 2026-09-08 from zenstory-ai/drama-skills form cards (实拍 / 二维动态漫 / 国漫二次元 运动预算与身份锚点, MIT) + our own delivery notes (竖屏字幕、平台安全区)",
+    "version": 1,
+    "note": "形态卡：一种交付形态默认带什么（画幅、单镜时长、字幕、每分钟镜数）、必带项、一句运动预算。defaults 只补缺省，不覆盖明写的值；运动预算句进每镜视频提示词；必带项进起草系统提示词并由 lint 静态核对。",
+    "composition_note": "composition：先写主体落在画面哪一块，句末写明是原生画幅、不是另一种画幅裁出来或拉宽的（本仓库自写）。"
+  },
+  "cards": [
+    {
+      "id": "vertical_drama",
+      "name": "竖屏短剧",
+      "aliases": [
+        "短剧",
+        "竖屏",
+        "竖屏剧",
+        "vertical",
+        "vertical drama",
+        "9:16 短剧"
+      ],
+      "defaults": {
+        "aspect_ratio": "9:16",
+        "resolution": "1080p",
+        "shot_seconds": [
+          3,
+          8
+        ],
+        "subtitles": true,
+        "max_shots_per_minute": 12,
+        "hook_seconds": 3,
+        "portrait": true
+      },
+      "must_have": [
+        "前 3 秒有钩子：一句开口的台词或一个看得见的动作节拍",
+        "每镜人脸可辨：主角在画面里认得出，远景后两镜内必须回到近景",
+        "字幕常开：平台默认静音播放，台词要能读",
+        "每镜只有一个主导动作，切镜带来景别或信息的变化",
+        "集尾停在一个未落地的选择或一条刚露出的信息上"
+      ],
+      "motion_budget": "每镜只做一次机位运动，人物动作幅度小于机位运动；人物走位不出竖幅中间三分之一的宽度。",
+      "english": {
+        "name": "Vertical short drama",
+        "motion_budget": "One camera move per shot at most; the actor's movement stays smaller than the camera's; the actor's blocking stays within the middle third of the portrait frame's width.",
+        "must_have": [
+          "A hook inside the first 3 seconds: a spoken line or a visible action beat",
+          "Faces readable in every shot; after a wide shot, return to a closer size within two shots",
+          "Subtitles always on: platforms autoplay muted",
+          "One dominant action per shot; every cut changes the size or the information",
+          "End the episode on an unresolved choice or a freshly exposed fact"
+        ],
+        "composition": "Clear space over the head and under the feet, with the person midway between the left and right edges; a native 9:16 portrait frame with no black bars, not cropped from a landscape shot."
+      },
+      "composition": "头顶和脚下都别贴着画边，人物站在左右的正中；原生 9:16 竖幅，上下不加黑条，不是从横版画面裁出来的。"
+    },
+    {
+      "id": "horizontal_short",
+      "name": "横屏短片",
+      "aliases": [
+        "横屏",
+        "短片",
+        "横屏短片",
+        "16:9",
+        "horizontal",
+        "landscape",
+        "short film"
+      ],
+      "defaults": {
+        "aspect_ratio": "16:9",
+        "resolution": "1080p",
+        "shot_seconds": [
+          4,
+          12
+        ],
+        "subtitles": false,
+        "max_shots_per_minute": 10,
+        "hook_seconds": 5,
+        "portrait": false
+      },
+      "must_have": [
+        "开场 5 秒内建立地点与人物：一个能看清空间关系的镜头",
+        "景别有交替：全景、中景、特写不连续三镜同一景别",
+        "运镜有动机：跟随、揭示或施压，不为炫技做长镜",
+        "至少一次声音先于画面进入（先听到再看到）",
+        "字幕可选：不烧字幕时台词要靠表演和口型能听懂"
+      ],
+      "motion_budget": "运镜要有动机（跟随、揭示、施压），每镜最多一次；人物可以全动作，但同镜并行的动作不超过两个。",
+      "english": {
+        "name": "Landscape short film",
+        "motion_budget": "Every camera move needs a motive (follow, reveal, pressure), at most one per shot; the actor may move freely, but no more than two simultaneous actions in one shot.",
+        "must_have": [
+          "Establish place and people within the first 5 seconds with a shot that shows spatial relations",
+          "Alternate sizes: never three consecutive shots at the same framing",
+          "Camera moves need a motive: follow, reveal or pressure; no long takes for show",
+          "At least once, sound enters before the picture",
+          "Subtitles optional: without burned-in subtitles, performance and lip movement must carry the lines"
+        ],
+        "composition": "Spend the width on the surroundings and on near-to-far layers, and keep people off the left and right edges; a native 16:9 landscape frame, not a portrait shot stretched wide."
+      },
+      "composition": "横向的宽度拿来交代环境和由近到远的层次，人物别贴着左右画边；原生 16:9 横幅，不是把竖版画面拉宽的。"
+    },
+    {
+      "id": "anime_vertical",
+      "name": "竖屏动画",
+      "aliases": [
+        "动画",
+        "漫剧",
+        "动态漫",
+        "二维动画",
+        "国漫",
+        "anime",
+        "animation",
+        "animated vertical"
+      ],
+      "defaults": {
+        "aspect_ratio": "9:16",
+        "resolution": "1080p",
+        "shot_seconds": [
+          3,
+          8
+        ],
+        "subtitles": true,
+        "max_shots_per_minute": 12,
+        "hook_seconds": 3,
+        "portrait": true
+      },
+      "must_have": [
+        "前 3 秒有钩子：一句台词或一次姿势切换",
+        "每镜点名可动层：手、嘴、发梢、衣摆、一件道具里只让一层全动",
+        "角色轮廓与色块跨镜一致：填成纯黑剪影也认得出是谁",
+        "口型策略全集一致：不做、有限开合、完整口型三选一",
+        "字幕常开，画面里的拟声字与心声框要声明是画内还是后期层"
+      ],
+      "motion_budget": "默认限动：一镜只让承担因果的那一层全动，其余保持定帧或局部循环；不给所有图层同时加无因运动。",
+      "english": {
+        "name": "Vertical animation",
+        "motion_budget": "Limited motion by default: only the layer that carries the cause moves fully in a shot, everything else holds or loops locally; never give every layer motion at once without a reason.",
+        "must_have": [
+          "A hook inside the first 3 seconds: a line or a pose switch",
+          "Name the moving layer per shot: only one of hand, mouth, hair tips, hem or a prop moves fully",
+          "Silhouette and colour blocks stay consistent across shots: filled solid black, the character is still recognisable",
+          "One lip-sync policy for the whole episode: none, limited or full",
+          "Subtitles always on; on-screen sound words and thought boxes must say whether they are in-frame or a post layer"
+        ],
+        "composition": "The near cover, the character and the far background each sit on their own layer, clearly apart; clear space over the head and under the feet, with the character midway between the left and right edges; a native 9:16 portrait frame, not cropped from a landscape shot."
+      },
+      "composition": "近处的遮挡、角色、远处的背景各占一层，前后分得开；头顶和脚下都留出空，角色站在左右的正中；原生 9:16 竖幅，不是从横版画面裁出来的。"
+    },
+    {
+      "id": "talking_head",
+      "name": "口播 / vlog",
+      "aliases": [
+        "口播",
+        "vlog",
+        "谈话",
+        "解说",
+        "talking head",
+        "explainer"
+      ],
+      "defaults": {
+        "aspect_ratio": "9:16",
+        "resolution": "1080p",
+        "shot_seconds": [
+          5,
+          15
+        ],
+        "subtitles": true,
+        "max_shots_per_minute": 8,
+        "hook_seconds": 3,
+        "portrait": true
+      },
+      "must_have": [
+        "前 3 秒说出这条视频要回答的问题",
+        "说话人正对或斜对镜头，视线看镜头",
+        "每镜人脸可辨，脸落在画面上三分之一",
+        "字幕常开、逐句跟读",
+        "切镜只在换话题或换景别时发生，不为节奏硬切"
+      ],
+      "motion_budget": "机位基本不动，全镜最多一次缓推；说话人只做手势和头部小动作，身体不离开画面中央。",
+      "english": {
+        "name": "Talking head / vlog",
+        "motion_budget": "The camera essentially holds, with at most one slow push-in per shot; the speaker only gestures and makes small head movements, never leaving the centre of the frame.",
+        "must_have": [
+          "State the question this video answers within the first 3 seconds",
+          "The speaker faces the camera straight on or at a slight angle, eyes on the lens",
+          "Face readable in every shot, placed in the upper third of the frame",
+          "Subtitles always on, following the speech line by line",
+          "Cut only on a change of topic or framing, never just for rhythm"
+        ],
+        "composition": "The speaker is framed from the shoulders up, the face between the upper-third line and the centre; a native 9:16 portrait frame, not cropped from a landscape shot."
+      },
+      "composition": "说话人只取肩膀以上，脸的高度在上三分之一线和画面正中之间；原生 9:16 竖幅，不是从横版画面裁出来的。"
+    },
+    {
+      "id": "product_story",
+      "name": "品牌情景",
+      "aliases": [
+        "品牌",
+        "带货",
+        "产品情景",
+        "广告短片",
+        "product",
+        "brand story",
+        "commercial"
+      ],
+      "defaults": {
+        "aspect_ratio": "9:16",
+        "resolution": "1080p",
+        "shot_seconds": [
+          3,
+          6
+        ],
+        "subtitles": true,
+        "max_shots_per_minute": 14,
+        "hook_seconds": 3,
+        "portrait": true
+      },
+      "must_have": [
+        "前 3 秒出现产品，或它要解决的那个问题",
+        "产品每镜同一外观：颜色、形状、标识位置不漂",
+        "至少一镜产品特写，手持时看得见持握方式",
+        "结尾给行动指引留位置（后期文字区不压产品）",
+        "不出现任何真实品牌的标志或商标"
+      ],
+      "motion_budget": "产品在画面里的移动与机位运动二选一，不同时发生；人物动作只为把产品带进画面或使用它。",
+      "english": {
+        "name": "Brand scenario",
+        "motion_budget": "Either the product moves in frame or the camera moves, never both at once; the actor's movement exists only to bring the product into frame or to use it.",
+        "must_have": [
+          "The product, or the problem it solves, appears within the first 3 seconds",
+          "The product looks the same in every shot: colour, shape and mark position do not drift",
+          "At least one product close-up; when handheld, the grip is visible",
+          "Leave room at the end for a call to action (the post-text area must not cover the product)",
+          "No real brand logos or trademarks of any kind"
+        ],
+        "composition": "The product keeps its spot in the frame for the whole shot; neither it nor the person touches the frame edges, both staying in the middle band; a native 9:16 portrait frame, not cropped from a landscape shot."
+      },
+      "composition": "产品在画面里的位置整镜不挪，产品和人都不贴画边、待在中间一带；原生 9:16 竖幅，不是从横版画面裁出来的。"
+    }
+  ]
+}

@@ -1,0 +1,777 @@
+{
+  "_note": "风格/模板骨架库：neg / frame_style / scene_anchor 三个字段该覆盖哪些块的结构清单，全部是经验规则。static_book 档没有成片样本，标记 inferred。",
+  "_usage": "scriptgen.py 起草整集/单镜时，按 camera_profile 查表把 neg_pool（universal+near_universal+common）、对应 profile 的 frame_style骨架结构、scene_anchor 检查清单塞进系统提示词当结构指导——不是字符串拼接模板，模型仍要自己写出具体内容，这里只保证结构不漏项。",
+  "neg_pool": [
+    {
+      "id": "no_text",
+      "cn": "画面内可读文字/字母",
+      "en": "readable text, letters",
+      "tier": "universal",
+      "note": "字幕/牌匾刻字/招牌一律后期程序化叠加，生成画面里永远不出现"
+    },
+    {
+      "id": "no_watermark",
+      "cn": "水印",
+      "en": "watermark",
+      "tier": "universal",
+      "note": ""
+    },
+    {
+      "id": "no_logo",
+      "cn": "logo/品牌标",
+      "en": "logo",
+      "tier": "universal",
+      "note": ""
+    },
+    {
+      "id": "no_numbers",
+      "cn": "画面内数字",
+      "en": "numbers",
+      "tier": "near_universal",
+      "note": "同 no_text，指数/金额一律后期加"
+    },
+    {
+      "id": "no_flat_2d",
+      "cn": "扁平 2D",
+      "en": "flat 2D",
+      "tier": "near_universal",
+      "note": ""
+    },
+    {
+      "id": "no_cel_shaded",
+      "cn": "赛璐璐上色",
+      "en": "cel shading",
+      "tier": "near_universal",
+      "note": ""
+    },
+    {
+      "id": "no_anime",
+      "cn": "日系动漫风",
+      "en": "anime",
+      "tier": "near_universal",
+      "note": ""
+    },
+    {
+      "id": "no_duplicate",
+      "cn": "重复/分身角色，身份漂移",
+      "en": "duplicate characters, identity drift",
+      "tier": "common",
+      "note": "多人同框、跨镜次角色一致性要求高的项目建议加"
+    },
+    {
+      "id": "no_extra_limbs",
+      "cn": "多余肢体/手指、缺手",
+      "en": "extra limbs, extra fingers, missing hand",
+      "tier": "common",
+      "note": ""
+    },
+    {
+      "id": "no_morph_jitter",
+      "cn": "变形/闪烁/抖动",
+      "en": "morphing, flicker, jitter",
+      "tier": "common",
+      "note": ""
+    },
+    {
+      "id": "no_axis_flip",
+      "cn": "镜像/轴线翻转",
+      "en": "mirrored geography, axis flip",
+      "tier": "common",
+      "note": "动作戏、多人对峙、需要稳定左右站位的项目建议加；单人独白类可不加"
+    },
+    {
+      "id": "no_gore",
+      "cn": "血腥/恐怖/地狱意象",
+      "en": "gore, blood, horror imagery, hellfire demon",
+      "tier": "genre_dependent",
+      "note": "只在故事基调本身偏黑色/惊悚但要克制猎奇感时用（比如「有灵异元素但不是恐怖片」这种）；纯温情/合家欢类目不要加，容易被模型过度联想"
+    },
+    {
+      "id": "no_glow_fx",
+      "cn": "发光/粒子/光环/能量特效",
+      "en": "glowing, magical aura, sparkles, particles, energy effects, glowing eyes",
+      "tier": "genre_dependent",
+      "note": "只在写实、有反常事件但不用特效的项目里加（反常靠看得见的结果呈现，不靠光效）；奇幻/神话类不加"
+    }
+  ],
+  "frame_style_skeletons": {
+    "classic_film": {
+      "用于": "经典电影正剧，参考《教父》《肖申克的救赎》《花样年华》——横屏、克制、光影叙事",
+      "risk_source": "inferred",
+      "structure_cn": [
+        "开场一句点名：原创电影级写实或风格化 3D、正剧基调、横屏 16:9 或 2.39:1",
+        "画质规格：超清源图（2K 级），胶片质感可以写「细腻颗粒」，不写「照片级诡异感」",
+        "角色建模基调：成年人的克制表演，皮肤和布料有真实重量，不卡通化",
+        "材质表（故事专属）：木器、皮革、呢料、玻璃……按年代与阶层写",
+        "调色/光线（故事专属）：低调布光、单一主光源、大面积暗部；顶光或霓虹暖色任选其一并全片一致；色板写 5–7 个具体色名（如炭灰、焦糖棕、旧铜），不写「电影感配色」这种空话",
+        "渲染规格：cinematic PBR，浅景深，长焦压缩",
+        "基调一句话（故事专属）：这场戏压着的那件事是什么",
+        "收尾防伪写实警戒句：见下方 guardrail_cn/guardrail_en"
+      ],
+      "guardrail_cn": "绝不是廉价手游渲染、绝不是抄袭具体电影画面、不是照片级写实诡异感、不是扁平2D、不是赛璐璐上色、不是日系动漫、不加滤镜感。",
+      "guardrail_en": "never a cheap mobile-game render, never a copied frame from a real film, never photorealistic uncanny, not flat 2D, not cel-shaded, not anime, no filter look."
+    },
+    "short_drama_vertical": {
+      "用于": "竖屏爆款短剧，参考《我在八零年代当后妈》《无双》《闪婚》类——9:16、大脸、反应插入、快钩子",
+      "risk_source": "inferred",
+      "structure_cn": [
+        "开场一句点名：原创中式风格化 3D 动画或轻美颜真人质感（二选一全片一致）、短剧基调、竖屏 9:16",
+        "画质规格：超清源图（2K 级），脸要能撑住满屏特写；不用「照片级写实」这种会引发诡异感的词",
+        "角色建模基调：讨喜、有表现力的东亚角色，五官辨识度高（短剧靠脸认人），不是恐怖片式写实",
+        "材质表（故事专属）：按年代/阶层写（八零年代的的确良、豪门的丝绒、职场的西装……）",
+        "调色/光线（故事专属）：明亮通透、肤色干净，情绪镜可压暗部；色板写 5–7 个具体色名（如米白、藕粉、深胡桃木、暖金）全片同一套",
+        "渲染规格：cinematic PBR，controlled depth of field，主体永远在焦内",
+        "基调一句话（故事专属）：本集的爽点/反转是什么，观众要替谁出气",
+        "收尾防伪写实警戒句：见下方 guardrail_cn/guardrail_en"
+      ],
+      "guardrail_cn": "绝不是廉价手游渲染、绝不是抄袭具体影视画面、不是照片级写实诡异感、不是扁平2D、不是赛璐璐上色、不是日系动漫、绝不是恐怖片式面孔。",
+      "guardrail_en": "never a cheap mobile-game render, never a copied frame from a real show, never photorealistic uncanny, not flat 2D, not cel-shaded, not anime, never a horror face."
+    },
+    "anime_action": {
+      "用于": "动画动作番，参考《鬼灭之刃》《进击的巨人》《咒术回战》——横屏、高对比、动作有重量",
+      "risk_source": "inferred",
+      "structure_cn": [
+        "开场一句点名：原创动画风格（写清是日系 2D 动画、国漫 3D 还是赛璐璐 + 3D 背景混合，全片只选一种）、动作基调、横屏 16:9",
+        "画质规格：超清源图，线条干净、色块整洁；动作镜可写「速度线 / 动态模糊」但只在该镜",
+        "角色设计基调：轮廓一眼可辨（发型/配色/武器各不相同），表情可以夸张，身体比例全片一致",
+        "材质/场景（故事专属）：按世界观写——刀锋、巨墙、咒具……",
+        "调色/光线（故事专属）：高对比、饱和主色 + 深暗部；剪影镜逆光；招式特效有固定色；色板写 5–7 个具体色名（如靛蓝、朱红、炭黑、冷白）",
+        "渲染规格：按所选动画媒介写（赛璐璐着色 + 手绘背景 / 3D toon shading），不写 cinematic PBR",
+        "基调一句话（故事专属）：这场战斗赌的是什么",
+        "收尾警戒句：见下方 guardrail_cn/guardrail_en——这一档允许动漫和赛璐璐，防的是写实和廉价"
+      ],
+      "guardrail_cn": "不是照片级写实、不是真人、不是廉价手游渲染、不是抄袭具体动画的画面、不是儿童低幼画风；线条与配色全片一致。",
+      "guardrail_en": "never photorealistic, not live-action, never a cheap mobile-game render, never a copied frame from a real anime, not a preschool cartoon look; line work and palette consistent across the whole film."
+    },
+    "tv_drama": {
+      "用于": "电视剧长剧情，参考《琅琊榜》《甄嬛传》《请回答1988》——横屏、稳、环境建置、过肩对话",
+      "risk_source": "inferred",
+      "structure_cn": [
+        "开场一句点名：原创电视剧级写实或风格化 3D、剧情基调、横屏 16:9",
+        "画质规格：超清源图，环境细节要撑得住建置镜和双人中景",
+        "角色建模基调：成年人的日常表演，服化道按时代考据，多人同框时各自可辨",
+        "材质表（故事专属）：按时代写——古装的绫罗与木构、年代剧的毛线与旧家具……",
+        "调色/光线（故事专属）：自然光为主，室内暖、室外冷；古装可压成低饱和；色板写 5–7 个具体色名（如青灰、松绿、朱砂、绢黄）全片一致",
+        "渲染规格：cinematic PBR，中等景深（双人镜两张脸都在焦内）",
+        "基调一句话（故事专属）：这一场改变了谁和谁的关系",
+        "收尾防伪写实警戒句：见下方 guardrail_cn/guardrail_en"
+      ],
+      "guardrail_cn": "绝不是廉价手游渲染、绝不是抄袭具体剧集画面、不是照片级写实诡异感、不是扁平2D、不是赛璐璐上色、不是日系动漫、不是 MV 式滤镜。",
+      "guardrail_en": "never a cheap mobile-game render, never a copied frame from a real series, never photorealistic uncanny, not flat 2D, not cel-shaded, not anime, no music-video filter look."
+    },
+    "suspense_thriller": {
+      "用于": "悬疑惊悚，参考《隐秘的角落》《沉默的真相》《七宗罪》——低调布光、留白、不安感靠构图不靠血",
+      "risk_source": "inferred",
+      "structure_cn": [
+        "开场一句点名：原创电影级写实或风格化 3D、悬疑基调、横屏 16:9（竖屏悬疑短剧可 9:16，全片一致）",
+        "画质规格：超清源图，暗部要有层次（不能糊成一团黑）",
+        "角色建模基调：普通人的脸，表演克制；反派不写「邪恶」，只写事实",
+        "材质表（故事专属）：潮湿、锈蚀、旧纸、玻璃反光……按案发环境写",
+        "调色/光线（故事专属）：低调布光、冷色或单一暖光源、大面积暗部与留白；雨、雾、走廊纵深；色板写 5–7 个具体色名（如铅灰、墨绿、钠灯橙、锈红）",
+        "渲染规格：cinematic PBR，长焦压缩或广角畸变二选一并全片一致",
+        "基调一句话（故事专属）：观众此刻比角色多知道什么",
+        "收尾警戒句：见下方 guardrail_cn/guardrail_en——防猎奇，悬疑不等于恐怖片"
+      ],
+      "guardrail_cn": "绝不是廉价手游渲染、绝不是抄袭具体电影画面、不是照片级写实诡异感、不是扁平2D、不是赛璐璐上色、不是日系动漫；无血腥、无鬼怪、无 jump scare 式面孔。",
+      "guardrail_en": "never a cheap mobile-game render, never a copied frame from a real film, never photorealistic uncanny, not flat 2D, not cel-shaded, not anime; no gore, no ghosts, no jump-scare faces."
+    },
+    "dark_comedy_vertical": {
+      "用于": "旧项目兼容：竖屏黑色幽默类（已不再推荐，新项目用 short_drama_vertical）",
+      "structure_cn": [
+        "开场一句点名：原创、中式风格化 3D 动画、黑色幽默基调、竖屏 9:16",
+        "画质规格：超清源图（2K 级），不用「照片级写实」这种会引发诡异感的词",
+        "角色建模基调：讨喜、有表现力的东亚角色建模，不是恐怖片式写实",
+        "材质表（故事专属）：按角色/场景实际材质写",
+        "调色/光线（故事专属）：按场景基调写（黄昏暖橙、荧光灯冷绿……）",
+        "渲染规格：cinematic PBR，controlled depth of field",
+        "基调一句话（故事专属）：这个故事的讽刺点/幽默机制是什么",
+        "收尾防伪写实警戒句：见下方 guardrail_cn/guardrail_en，可直接复用"
+      ],
+      "guardrail_cn": "绝不是廉价手游渲染、绝不是抄袭电影画面、绝不是照片级写实诡异感、不是扁平2D、不是赛璐璐上色、不是日系动漫、绝不是恐怖片式鬼怪。",
+      "guardrail_en": "never a cheap mobile-game render, never a copied movie frame, never photorealistic uncanny, not flat 2D, not cel-shaded, never a horror ghost."
+    },
+    "manhua_dialogue": {
+      "用于": "旧项目兼容：竖屏漫画对话驱动类（已不再推荐，新项目用 short_drama_vertical）",
+      "structure_cn": [
+        "开场一句点名：漫剧/动画风格、对话驱动、竖屏 9:16",
+        "画质规格：清晰源图，角色表情要能撑住大段对白的特写",
+        "角色建模基调：对话驱动的漫剧角色通常更卡通化/亲和，不追求写实",
+        "材质/场景（故事专属）：单场景为主，场景细节按故事写",
+        "渲染规格：cinematic PBR 或更轻量的渲染描述均可，看项目定位",
+        "基调一句话（故事专属）",
+        "收尾防伪写实警戒句：见下方 guardrail_cn/guardrail_en"
+      ],
+      "guardrail_cn": "不是照片级写实、不是扁平2D、不是赛璐璐上色、绝不是抄袭电影画面。",
+      "guardrail_en": "never photorealistic uncanny, not flat 2D, not cel-shaded, never a copied movie frame."
+    },
+    "wuxia_action": {
+      "用于": "旧项目兼容：横屏动作/神话类（已不再推荐，新项目用 anime_action 或 classic_film）",
+      "structure_cn": [
+        "开场一句点名：原创中式风格化 3D 动画、动作/神话基调、横屏 16:9",
+        "画质规格：超清源图，强调气势和动态感",
+        "角色建模基调：东亚角色表演式建模，动作场面要有真实重量感",
+        "材质表（故事专属）：丝绸、青铜、木器等按故事写",
+        "调色/光线（故事专属）",
+        "渲染规格：cinematic PBR",
+        "基调一句话（故事专属）：这场戏的气势/张力来源是什么",
+        "收尾防伪写实警戒句：见下方 guardrail_cn/guardrail_en"
+      ],
+      "guardrail_cn": "绝不是廉价手游渲染、绝不是抄袭电影画面、绝不是照片级写实诡异感、不是扁平2D、不是赛璐璐上色。",
+      "guardrail_en": "never a cheap mobile-game render, never a copied movie frame, never photorealistic uncanny, not flat 2D, not cel-shaded."
+    },
+    "static_book": {
+      "用于": "旧项目兼容：绘本静帧类（绘本走独立模块，这里只为兼容保留；没有成片样本，按用途描述反推，标记 inferred）",
+      "risk_source": "inferred",
+      "structure_cn": [
+        "开场一句点名：绘本插画风格，不是 3D 渲染质感",
+        "画质规格：清晰插画级源图",
+        "角色/场景基调：儿童友好、色彩明快、线条柔和",
+        "材质/调色（故事专属）：按绘本主题写",
+        "收尾防伪写实警戒句：见下方 guardrail_cn/guardrail_en"
+      ],
+      "guardrail_cn": "不是照片级写实、不是 3D 渲染质感、不是恐怖/惊悚意象。",
+      "guardrail_en": "never photorealistic, not a 3D render look, never horror or frightening imagery."
+    },
+    "vlog_handheld": {
+      "用于": "旧项目兼容：竖屏真人手机 vlog 类（已不再推荐）。写实真人在对白镜容易落进恐怖谷，所以这一档走轻度 CG 化的国漫 3D；样本很少，标记 inferred",
+      "risk_source": "inferred",
+      "structure_cn": [
+        "开场一句点名：轻度 CG 化的国漫 3D 角色、手机 vlog 纪实形式、竖屏 9:16、日常基调",
+        "画质规格：premium 3D donghua 渲染质感，但镜头语言是手机——前置自拍略广角、手持轻晃、非电影机",
+        "人物基调：皮肤光滑均匀带柔和次表面散射（无毛孔无照片纹理）、头发为干净有光泽的 3D 发束、眼睛偏大带高光、真实 PBR 布料；**轻度**——不往二次元/赛璐璐走",
+        "动物（如有）：毛发与人物同一套 3D 渲染质感，不做照片级毛发",
+        "光线（故事专属）：自然光为主——傍晚、路灯、室内暖光；柔和电影感可以，但要像手机拍到的自然光，不要棚拍布光",
+        "调色：自然色，不加滤镜感",
+        "基调一句话（故事专属）：轻松、温情还是紧张；事情照实拍，不解释、不加特效——观众跟着手机镜头走",
+        "收尾防伪警戒句：见下方 guardrail_cn/guardrail_en——两头都防：防照片级写实（恐怖谷）、防 2D 动漫/赛璐璐（过头）"
+      ],
+      "guardrail_cn": "绝不是照片、不是照片级写实皮肤、不是真实毛孔发丝；也不是 2D 动漫、不是赛璐璐、不是扁平插画、不是廉价手游渲染；零发光零粒子零光环特效。",
+      "guardrail_en": "never a photograph, never photorealistic skin, no real pores or photo hair texture; also not 2D anime, not cel-shaded, not a flat illustration, never a cheap mobile-game render; zero glow, zero particles, zero aura effects."
+    },
+    "ghost_pov": {
+      "用于": "旧项目兼容：全程第一人称视角的真人短剧（已不再推荐，新项目用 suspense_thriller）。样本很少，标记 inferred",
+      "risk_source": "inferred",
+      "structure_cn": [
+        "开场一句点名：竖屏真人短剧的画面质感、照片级写实的真实世界、镜头就是主视角人物的眼睛",
+        "画质规格：真实小公寓/真实光线/真实物件，2K 源图",
+        "主角基调：主角可以是轻美颜真人（干净均匀有光泽的皮肤、干净发束），光照影子与环境融合；其余人全是普通真人质感",
+        "POV 事实：第一人称、齐眼高度、随步子轻微起伏；主视角人物的身体/手/脸永远不入画（shot 里写「镜头前方没有任何人、没有肩膀或后脑勺入画」）",
+        "道具位置写物理事实：放在哪件家具上 + 离人物多远",
+        "调性一句话（故事专属）：冷幽默、温情还是悬疑；反常的元素克制，只在该镜出现一两秒",
+        "视觉风格四要素（见 visual_style_template）：媒介技法 / 带角色的色板 / 线与边缘 / 完成度",
+        "收尾防伪警戒句：见下方 guardrail_cn/guardrail_en——防动画/CG，也防恐怖片调"
+      ],
+      "guardrail_cn": "不是动漫、不是 CG、不是蜡像脸、不是塑料皮肤；不恐怖、不阴森、无血；画面任何位置没有可读文字。",
+      "guardrail_en": "not anime, not CG, no waxy faces, no plastic skin; not horror, not eerie, no blood; no readable text anywhere."
+    },
+    "none": {
+      "用于": "没有匹配到以上任何一档的项目——不代表可以随便写，只是没有专属骨架，退回最基础的通用规则",
+      "structure_cn": [
+        "开场一句点名风格基调",
+        "画质规格",
+        "角色/场景材质与调色（故事专属）",
+        "收尾防伪写实警戒句：至少带上 no_flat_2d / no_cel_shaded / 不抄袭电影画面这三条"
+      ],
+      "guardrail_cn": "不是扁平2D、不是赛璐璐上色、绝不是抄袭电影画面。",
+      "guardrail_en": "not flat 2D, not cel-shaded, never a copied movie frame."
+    }
+  },
+  "scene_anchor_checklists": {
+    "classic_film": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境+左右站位描述，并声明「每一镜保持一致」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "重申「无可读文字/logo/水印」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "cast_closed_list",
+        "cn": "只有 cast 里点名的角色能出现，禁止臆造额外群演",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "axis_declared",
+        "cn": "横屏对话戏声明轴线（谁在左谁在右、视线方向），过肩反打两镜都写",
+        "universal": false,
+        "note": "过肩反打全靠轴线不翻"
+      },
+      {
+        "id": "light_source_locked",
+        "cn": "主光源方向与色温写成事实（窗在左、顶光、烛火……），全场一致",
+        "universal": false,
+        "note": "低调布光是这一档的画风支柱，光源一变就像换了场"
+      },
+      {
+        "id": "entry_exit_states",
+        "cn": "参考链上的镜次写 entry_state / exit_state；前后两镜景别要变，时间只往后走",
+        "universal": true,
+        "note": ""
+      }
+    ],
+    "short_drama_vertical": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境+左右站位描述，并声明「每一镜保持一致」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "subtitle_safe_zone",
+        "cn": "画面下方留白 %（字幕安全区），竖屏短剧默认 22%—24%",
+        "universal": false,
+        "note": "竖屏对话类的强约束"
+      },
+      {
+        "id": "face_hand_band",
+        "cn": "人脸/手/主要动作保持在画面高度 12%-72% 区间内",
+        "universal": false,
+        "note": "竖屏对话类的强约束"
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "重申「无可读文字/logo/水印」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "cast_closed_list",
+        "cn": "只有 cast 里点名的角色能出现，禁止臆造额外群演；路人反向描述",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "prop_continuity",
+        "cn": "跨镜次的道具状态连续性（信物、伤口、手机屏幕……）",
+        "universal": false,
+        "note": "只在有明确跨镜道具变化的故事里需要"
+      },
+      {
+        "id": "performance_physical_only",
+        "cn": "表演写成镜头拍得到的动作，不用形容心情的词；cast block 不写默认表情",
+        "universal": true,
+        "note": "大脸特写里默认表情会把每镜拉成同一张脸"
+      }
+    ],
+    "anime_action": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境/场地描述，横屏的左右轴线声明",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "重申「无可读招牌/文字」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "cast_closed_list",
+        "cn": "只有 cast 里点名的角色能出现",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "background_extras",
+        "cn": "背景群演的行为规则（不主动入镜/看到动作才反应）",
+        "universal": false,
+        "note": "多人场面才需要"
+      },
+      {
+        "id": "named_blocking",
+        "cn": "点名角色的左右站位/能量分配，招式方向写清",
+        "universal": false,
+        "note": ""
+      },
+      {
+        "id": "fx_palette_locked",
+        "cn": "招式/特效颜色写成固定值（雷是青白、火是橙红……），全片一致",
+        "universal": false,
+        "note": "动画动作番的特效色就是角色标识"
+      },
+      {
+        "id": "silhouette_readable",
+        "cn": "动作镜要求剪影可辨：姿势外轮廓一眼看出谁在做什么",
+        "universal": false,
+        "note": "动画分镜的基本功，AI 生成里也能压住肢体乱长"
+      }
+    ],
+    "tv_drama": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境+左右站位描述，并声明「每一镜保持一致」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "重申「无可读文字/logo/水印」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "cast_closed_list",
+        "cn": "只有 cast 里点名的角色能出现，禁止臆造额外群演",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "axis_declared",
+        "cn": "对话戏声明轴线（谁在左谁在右、视线方向），过肩反打两镜都写",
+        "universal": false,
+        "note": ""
+      },
+      {
+        "id": "background_extras",
+        "cn": "背景群演的行为规则（不主动入镜/看到动作才反应）",
+        "universal": false,
+        "note": "多人场面才需要"
+      },
+      {
+        "id": "costume_period_locked",
+        "cn": "服化道的时代事实写死（年代、材质、发型），不写「古风」「复古」这类模糊词",
+        "universal": false,
+        "note": "长剧情靠考据撑可信度"
+      },
+      {
+        "id": "entry_exit_states",
+        "cn": "参考链上的镜次写 entry_state / exit_state；前后两镜景别要变，时间只往后走",
+        "universal": true,
+        "note": ""
+      }
+    ],
+    "suspense_thriller": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境描述（案发地/走廊/家各一块），并声明「每一镜保持一致」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "重申「无可读文字/logo/水印/屏幕内容」——档案、信件、手机屏永远空白，字后期叠",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "cast_closed_list",
+        "cn": "只有 cast 里点名的角色能出现；路人反向描述",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "light_source_locked",
+        "cn": "主光源方向与色温写成事实，暗部层次写清（不糊成黑）",
+        "universal": false,
+        "note": ""
+      },
+      {
+        "id": "reveal_protected",
+        "cn": "揭示物在揭示镜之前只能以局部/遮挡/失焦出现（见观众可见性规则）",
+        "universal": false,
+        "note": "悬疑靠信息差，提前露出等于剧透"
+      },
+      {
+        "id": "no_gore_restate",
+        "cn": "在 scene_anchor 里重申「无血腥、无鬼怪」",
+        "universal": false,
+        "note": "悬疑不是恐怖片；模型看到「惊悚」爱往猎奇走"
+      },
+      {
+        "id": "entry_exit_states",
+        "cn": "参考链上的镜次写 entry_state / exit_state；前后两镜景别要变，时间只往后走",
+        "universal": true,
+        "note": ""
+      }
+    ],
+    "dark_comedy_vertical": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境+左右站位描述，并声明「每一镜保持一致」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "subtitle_safe_zone",
+        "cn": "画面下方留白 %（字幕安全区），竖屏对话类常用 24%",
+        "universal": false,
+        "note": "竖屏对话类的经验值（24%）"
+      },
+      {
+        "id": "face_hand_band",
+        "cn": "人脸/手/主要动作保持在画面高度 12%-72% 区间内",
+        "universal": false,
+        "note": "竖屏对话类的强约束"
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "在 scene_anchor 里重申一次「无可读文字/logo/水印」",
+        "universal": true,
+        "note": "跟 neg 有重复，但重复声明能压住这类失败"
+      },
+      {
+        "id": "cast_closed_list",
+        "cn": "只有 cast 里点名的角色能出现，禁止臆造额外群演",
+        "universal": true,
+        "note": "防止模型自己加路人/围观群众"
+      },
+      {
+        "id": "prop_continuity",
+        "cn": "跨镜次的道具状态连续性（比如蜡烛、饮料随镜次变短变少）",
+        "universal": false,
+        "note": "只在有明确跨镜道具变化的故事里需要，非通用"
+      }
+    ],
+    "manhua_dialogue": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境+左右站位描述，并声明「每一镜保持一致」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "重申「无可读文字」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "cast_closed_list",
+        "cn": "只有 cast 里点名的角色能出现",
+        "universal": true,
+        "note": ""
+      }
+    ],
+    "wuxia_action": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境/场地描述，横屏的南北或左右轴线声明",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "重申「无可读招牌/文字」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "background_extras",
+        "cn": "背景群演的行为规则（不主动入镜/看到动作才反应）",
+        "universal": false,
+        "note": "多人场面才需要"
+      },
+      {
+        "id": "named_blocking",
+        "cn": "点名角色的左右站位/能量分配",
+        "universal": false,
+        "note": "动作类的经验"
+      }
+    ],
+    "static_book": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境描述，声明跨页保持一致",
+        "universal": true,
+        "note": "inferred，无真实样本"
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "重申「无可读文字」（绘本文字走后期排版，不进生成画面）",
+        "universal": true,
+        "note": "inferred"
+      }
+    ],
+    "vlog_handheld": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境+左右站位描述，并声明「每一镜保持一致」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "重申「无可读文字/logo/水印」——街景招牌、手机屏幕内容尤其要压",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "cast_closed_list",
+        "cn": "只有 cast 里点名的角色能出现；路人必须逐个反向描述（年龄/性别/体型/发型至少两项与主角明显不同）",
+        "universal": true,
+        "note": "参考图在场时模型爱把路人生成主角的脸"
+      },
+      {
+        "id": "phone_state_continuity",
+        "cn": "手机前置/后置状态、持机手、随身道具的状态跨镜连续；翻转前后置只在切镜处发生",
+        "universal": false,
+        "note": "vlog 专属：机位就是持机人，持机状态不连续等于换了摄影师"
+      },
+      {
+        "id": "pair_scale_clause",
+        "cn": "人和体型差得多的对象（孩子、宠物、大件道具）同框时必写比例事实（对方高到主角身体哪个位置）；负向写上更大的体型",
+        "universal": false,
+        "note": "写成比例事实比写形容词稳；单体镜不需要"
+      },
+      {
+        "id": "zero_fx_restate",
+        "cn": "有反常事件的镜在 scene_anchor 里重申「无发光无粒子无光环」，靠看得见的结果（物件出现或消失、状态改变）呈现",
+        "universal": false,
+        "note": "写实 vlog 类专属基调；奇幻类不适用"
+      },
+      {
+        "id": "face_hand_band",
+        "cn": "人脸/手/主要动作保持在画面高度 12%-72% 区间内",
+        "universal": false,
+        "note": "竖屏对话类通用约束，沿用 dark_comedy_vertical"
+      },
+      {
+        "id": "subtitle_safe_zone",
+        "cn": "画面下方留白 %（字幕安全区）",
+        "universal": false,
+        "note": "中文字幕后期压，沿用竖屏线做法"
+      }
+    ],
+    "ghost_pov": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境描述（卧室/客厅/阳台各一块），并声明「每一镜保持一致」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "重申「无可读文字/logo/水印/手机界面」——纸页与屏幕永远空白，字后期叠",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "cast_closed_list",
+        "cn": "只有 cast 里点名的角色能出现；路人反向描述",
+        "universal": true,
+        "note": "沿用写实 vlog 类的路人规则"
+      },
+      {
+        "id": "pov_no_body",
+        "cn": "shot 里写「镜头前方没有任何人、没有肩膀或后脑勺入画」；neg 带前景人影/背影",
+        "universal": false,
+        "note": "模型爱给第一人称补一个背影"
+      },
+      {
+        "id": "floating_prop_physics",
+        "cn": "道具写清放在哪件家具上、离人物多远",
+        "universal": false,
+        "note": "只写『画面下方』，模型常把道具放到地板上"
+      },
+      {
+        "id": "entry_exit_states",
+        "cn": "参考链上的镜次写 entry_state / exit_state（做到哪一步、谁在哪、手里有什么、朝哪看哪、哪个声音还没停）；前后两镜景别要变，时间只往后走",
+        "universal": true,
+        "note": "2026-09-06 参考 waoowaoo 视频导演规范的思路，措辞自写"
+      },
+      {
+        "id": "performance_physical_only",
+        "cn": "表演写成镜头拍得到的动作，不用形容心情的词；cast block 不写默认表情；spec.performance_lock=true",
+        "universal": true,
+        "note": "cast 里写了默认表情，每镜都会被拉成同一个表情"
+      },
+      {
+        "id": "face_hand_band",
+        "cn": "人脸/手/主要动作保持在画面高度 12%-72% 区间内",
+        "universal": false,
+        "note": ""
+      },
+      {
+        "id": "subtitle_safe_zone",
+        "cn": "画面下方 22% 留白（字幕安全区）",
+        "universal": false,
+        "note": ""
+      }
+    ],
+    "none": [
+      {
+        "id": "fixed_geography",
+        "cn": "固定环境+左右站位描述，并声明「每一镜保持一致」",
+        "universal": true,
+        "note": ""
+      },
+      {
+        "id": "no_readable_restate",
+        "cn": "重申「无可读文字/logo/水印」",
+        "universal": true,
+        "note": ""
+      }
+    ]
+  },
+  "visual_style_template": {
+    "medium": "媒介与技法：写到具体技法层（如「湿画法水彩、纸纹可见」「手机实拍质感、淡妆真人」），不是媒介名",
+    "palette": "3–6 个 hex，每个带角色（主色/暗部/点缀/高光/肤色），跨镜保持；seedream 对色板词敏感，是跨镜色调漂移的解药之一",
+    "edge": "描线（粗细/颜色）或边缘处理（硬/软/漫射）二选一写清",
+    "finish": "全片同一完成度，禁止局部精修/局部草稿",
+    "examples": {
+      "ghost_pov": {
+        "medium": "手机实拍质感的写实画面，淡妆真人",
+        "palette": [
+          {
+            "hex": "#E4E1D6",
+            "role": "主色（灰白墙面）"
+          },
+          {
+            "hex": "#1F2B33",
+            "role": "暗部（深夜的蓝灰）"
+          },
+          {
+            "hex": "#D9B27C",
+            "role": "暖光（旧台灯）"
+          },
+          {
+            "hex": "#5E7F73",
+            "role": "点缀（小面积青绿物件）"
+          }
+        ],
+        "edge": "自然柔边，无描线",
+        "finish": "全片同一完成度，不做局部精修"
+      },
+      "vlog_handheld": {
+        "medium": "手机前置镜头直出的写实画面",
+        "palette": [
+          {
+            "hex": "#EFE9DD",
+            "role": "主色"
+          },
+          {
+            "hex": "#46505C",
+            "role": "暗部"
+          },
+          {
+            "hex": "#E07B39",
+            "role": "点缀（小面积橙色配饰）"
+          }
+        ],
+        "edge": "自然柔边",
+        "finish": "原片直出，不调色"
+      }
+    }
+  },
+  "profiles": [
+    "classic_film",
+    "short_drama_vertical",
+    "anime_action",
+    "tv_drama",
+    "suspense_thriller",
+    "dark_comedy_vertical",
+    "manhua_dialogue",
+    "wuxia_action",
+    "static_book",
+    "vlog_handheld",
+    "ghost_pov",
+    "none"
+  ]
+}

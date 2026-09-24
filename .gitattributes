@@ -1,0 +1,33 @@
+# 行尾统一（2026-09-10）：仓库里一直混着 CRLF 与 LF（43 : 75），每次批量改文件都要额外小心
+# 「别把行尾换了」，diff 里也经常出现整文件变更。库内一律存 LF，检出时不转换——
+# Windows 上的编辑器与 Python 都能正常处理 LF，构建脚本也不依赖 CRLF。
+* text=auto eol=lf
+
+# 二进制：不做任何行尾处理，也不进 diff
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.mp3 binary
+*.wav binary
+*.m4a binary
+*.mp4 binary
+*.mov binary
+*.ttf binary
+*.ttc binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.zip binary
+*.xlsx binary
+*.pyc binary
+*.sqlite3 binary
+*.exe binary
+*.dll binary
+*.pyd binary
+
+# Windows 专用脚本保留 CRLF：有些老工具链对 .bat/.cmd 的 LF 行尾会解析出错
+*.bat text eol=crlf
+*.cmd text eol=crlf

@@ -1,0 +1,16 @@
+{
+  "_comment": "文生视频：length 是帧数、fps 是 VHS_VideoCombine 的帧率，适配器用它们把「镜头几秒」换算成帧数（Wan 要 4n+1 帧）。output 是 VHS_VideoCombine，成品在 /history 的 outputs 里以 gifs 形式给出。",
+  "task": "video",
+  "title": "Wan 2.1 文生视频（需 VideoHelperSuite）",
+  "prompt": ["4", "inputs", "text"],
+  "negative": ["5", "inputs", "text"],
+  "width": ["6", "inputs", "width"],
+  "height": ["6", "inputs", "height"],
+  "length": ["6", "inputs", "length"],
+  "fps": ["10", "inputs", "frame_rate"],
+  "seed": ["8", "inputs", "seed"],
+  "steps": ["8", "inputs", "steps"],
+  "cfg": ["8", "inputs", "cfg"],
+  "model": ["1", "inputs", "unet_name"],
+  "output": "10"
+}

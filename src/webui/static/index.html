@@ -1,0 +1,2669 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<title>Content Cook · 内容创作工作台</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* "光片台"（contact sheet / light table）主题——不是通用后台配色套一遍，
+       是照这个工具的真实工作方式定的：审片、盖章、算钱。每个色都有具体
+       出处，不是随手挑的好看色：
+       stone/paper 是片台的工作台面和相纸；chop 是印章朱红，QC 盖章专用，
+       通过/退回不用红绿分——两个决定都是"盖了章"，红色是"这里有一个
+       正式决定"，决定内容看章上刻的字，不看颜色（现实里的印章逻辑）；
+       moss 是主操作色；brass 是花钱操作的强调色。
+       故意避开"暖米色+衬线+赤陶"这套 AI 审美默认项——石灰基调比那套暖调
+       更冷、更灰，不是同一个东西微调。 */
+    --bg: #eae6dc; --panel: #fbfaf5; --panel2: #f1eee5; --panel3: #e6e1d3;
+    --border: #dcd6c7; --border-soft: #e7e2d5;
+    --text: #211e1a; --dim: #6b6558; --faint: #a39c8c;
+    --accent: #55684a; --accent-strong: #46543c; --accent-bg: rgba(85,104,74,.10);
+    --warn: #93701f; --warn-bg: rgba(164,123,46,.14);
+    --bad: #a6392a; --bad-bg: rgba(166,57,42,.09);
+    --good: #55684a; --good-bg: rgba(85,104,74,.10);
+    --chop: #a6392a; --chop-bg: rgba(166,57,42,.08);
+    --shadow-sm: 0 1px 2px rgba(33,30,26,.09), 0 1px 1px rgba(33,30,26,.05);
+    --shadow-md: 0 8px 18px rgba(33,30,26,.13);
+    --shadow-lg: 0 20px 44px rgba(33,30,26,.20);
+    --r-sm: 3px; --r-md: 5px; --r-lg: 8px;
+    --display: 'Noto Serif SC', 'Songti SC', serif;
+    --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Inter', -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+         background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.55; }
+  button { font-family: inherit; }
+  /* 展示级中文标题走衬线体——跟正文的无衬线拉开，是"片单标题"跟"操作
+     界面"的分工，不是随便换个字体。只用在标题这种短字符串上，不动正文，
+     不为了一个字体拖慢整页。 */
+  header h1, .ep-header h2, .new-project-form h2, .modal-box h3 {
+    font-family: var(--display); letter-spacing: -.005em;
+  }
+  /* 技术性的数字/id/时长/花费走等宽——片场场记板那种"数据感"，跟叙事性的
+     标题、正文明确分开，一眼能分清"这是内容"还是"这是记录"。 */
+  .sid, .shot-meta, table.lines td.win, .budget, .cost-summary b,
+  .save-status, .gen-status, aside .item .id {
+    font-family: var(--mono);
+  }
+  /* 默认滚动条是系统亮色的，往深色界面上一戳非常扎眼——统一换成跟主题一致的深色细滚动条。 */
+  * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; border: 2px solid var(--bg); }
+  ::-webkit-scrollbar-thumb:hover { background: #c3c8d1; }
+  aside::-webkit-scrollbar-thumb, main::-webkit-scrollbar-thumb { border-color: var(--bg); }
+  header { padding: 15px 24px; border-bottom: 1px solid var(--border); background: var(--panel);
+           display: flex; align-items: center; gap: 12px; position: relative; z-index: 10; }
+  header .logo-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; background: var(--accent); }
+  header h1 { font-size: 15px; font-weight: 700; margin: 0; letter-spacing: -.01em; }
+  header .tag { font-size: 11px; color: var(--dim); background: var(--panel2); border: 1px solid var(--border);
+                padding: 4px 11px; border-radius: 999px; margin-left: auto; font-weight: 500; }
+  #global-progress { position: fixed; top: 49px; left: 0; right: 0; height: 2.5px; z-index: 70;
+                      overflow: hidden; opacity: 0; transition: opacity .2s ease; pointer-events: none; }
+  #global-progress.active { opacity: 1; }
+  #global-progress .fill { position: absolute; top: 0; left: -35%; height: 100%; width: 35%;
+    background: linear-gradient(90deg, transparent, var(--accent) 45%, #cfe3ff 50%, var(--accent) 55%, transparent);
+    animation: gp-slide 1.1s ease-in-out infinite; }
+  @keyframes gp-slide { 0% { left: -35%; } 100% { left: 100%; } }
+  .layout { display: flex; height: calc(100vh - 50px); }
+  aside { width: 288px; border-right: 1px solid var(--border); overflow-y: auto; flex-shrink: 0;
+          display: flex; flex-direction: column; background: var(--bg); }
+  aside .item.hidden-by-search { display: none; }
+  #sidebar-search { margin: 12px 16px 8px; padding: 8px 12px; background: var(--panel2); color: var(--text);
+                     border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 13px;
+                     transition: border-color .12s ease, box-shadow .12s ease; }
+  #sidebar-search:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  /* 状态筛选 chips：跟搜索是同一套过滤机制的另一个维度，不是另开一层分组
+     结构——项目已经按 pipeline 分好组了，这里只是在组内再筛一道状态。 */
+  #status-chips { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 16px 10px; }
+  #status-chips .chip { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+                         border: 1px solid var(--border); background: var(--panel2); color: var(--dim);
+                         cursor: pointer; transition: background .1s ease, color .1s ease, border-color .1s ease; }
+  #status-chips .chip .n { font-weight: 700; }
+  #status-chips .chip:hover { color: var(--text); border-color: var(--faint); }
+  #status-chips .chip.active { background: var(--accent-bg); color: var(--accent-strong); border-color: var(--accent); }
+  aside .item-list { overflow-y: auto; flex: 1; padding-bottom: 12px; }
+  aside .group-title { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--dim);
+                        font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+                        padding: 14px 16px 6px; cursor: pointer; user-select: none; }
+  aside .group-title:hover { color: var(--text); }
+  aside .group-title .chevron { display: inline-block; font-size: 9px; transition: transform .15s ease; }
+  aside .group-title .chevron.collapsed { transform: rotate(-90deg); }
+  aside .group-title .gcount { margin-left: auto; background: var(--panel2); color: var(--faint);
+                                padding: 1px 7px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+  aside .item { padding: 9px 14px; margin: 1px 8px; border-radius: var(--r-sm); cursor: pointer; font-size: 13px;
+                display: flex; justify-content: space-between; gap: 8px; align-items: center;
+                border-left: 2px solid transparent; transition: background .1s ease; }
+  aside .item:hover { background: var(--panel2); }
+  aside .item.active { background: var(--accent-bg); border-left-color: var(--accent); }
+  aside .item .id { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600;
+           padding: 3px 9px 3px 7px; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
+  .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .badge.locked { background: var(--warn-bg); color: var(--warn); }
+  .badge.locked::before { background: var(--warn); }
+  .badge.draft { background: var(--good-bg); color: var(--good); }
+  .badge.draft::before { background: var(--good); }
+  .badge.error { background: var(--bad-bg); color: var(--bad); }
+  .badge.error::before { background: var(--bad); }
+  main { flex: 1; overflow-y: auto; padding: 24px 32px; max-width: 1200px; margin: 0 auto; }
+  .shot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+               gap: 12px; margin: 16px 0 22px; }
+  .shot-grid a { position: relative; display: block; border-radius: var(--r-sm); overflow: hidden;
+                 border: 1px solid var(--border); text-decoration: none; box-shadow: var(--shadow-sm);
+                 transition: transform .12s ease, box-shadow .12s ease; }
+  .shot-grid a:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--accent); }
+  .shot-grid img { width: 100%; aspect-ratio: 9/16; object-fit: cover; display: block; background: var(--panel2); }
+  .shot-grid .no-frame { width: 100%; aspect-ratio: 9/16; display: flex; align-items: center;
+                          justify-content: center; background: var(--panel2); color: var(--dim);
+                          font-size: 10.5px; text-align: center; padding: 4px; }
+  .shot-grid .gid { position: absolute; left: 3px; bottom: 3px; font-size: 9.5px; color: #fff;
+                     background: rgba(0,0,0,.6); padding: 0 4px; border-radius: 4px; }
+  /* 缩略图墙上的小方点是"盖过章了"的最简形态——方形而不是圆点，跟下面
+     .qc-badge 的印章方角呼应，同一套 QC 词汇在不同尺度上出现，不是各画
+     各的。 */
+  .shot-grid .gqc { position: absolute; right: 4px; top: 4px; width: 7px; height: 7px; border-radius: 1.5px;
+                     box-shadow: 0 0 0 2px rgba(0,0,0,.4); }
+  .shot-grid .gqc.pass, .shot-grid .gqc.retake, .shot-grid .gqc.waive { background: var(--chop); }
+  .shot-grid .gqc.none { background: transparent; box-shadow: 0 0 0 1.5px rgba(0,0,0,.35) inset; }
+  .empty { color: var(--dim); font-size: 13px; margin-top: 40px; text-align: center; }
+  .ep-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .ep-header h2 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+  /* 警告条：以前整块用高饱和 warn 色打底，一大片实心色块很冲。改成白底卡片 +
+     左侧色条，跟 .toast 的处理方式一致——警示色只用来"标记"，不用来"铺底"。 */
+  /* 镜次导航条（满屏内容里定位不到具体镜头）——吸顶在 main 滚动区顶部，
+     每镜一个小标签：镜号 + 两个 QC 点（左首帧、右视频），当前滚到的镜高亮；输入框按镜号/台词过滤，回车跳转。 */
+  .shot-nav { position: sticky; top: -24px; z-index: 20; margin: 0 -32px 14px; padding: 8px 32px;
+              background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px);
+              border-bottom: 1px solid var(--border); }
+  .shot-nav .nav-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .shot-nav input { font: inherit; font-size: 12px; padding: 4px 8px; width: 220px; border: 1px solid var(--border);
+                    border-radius: var(--r-sm); background: var(--panel); color: var(--text); }
+  .shot-nav .nav-count { font-size: 11.5px; color: var(--dim); }
+  .shot-nav .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .shot-nav .chip { font-family: var(--mono); font-size: 10.5px; line-height: 1; padding: 4px 6px 4px 5px; border: 1px solid var(--border);
+                    border-radius: var(--r-sm); background: var(--panel); color: var(--dim); cursor: pointer; display: inline-flex; gap: 4px; align-items: center;
+                    text-decoration: none; }
+  .shot-nav .chip:hover { border-color: var(--accent); color: var(--text); }
+  .shot-nav .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .shot-nav .chip.hidden { display: none; }
+  .shot-nav .chip .d { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,.25) inset; background: transparent; }
+  .shot-nav .chip .d.pass { background: var(--good); box-shadow: none; }
+  .shot-nav .chip .d.retake { background: var(--bad); box-shadow: none; }
+  .shot-nav .chip .d.waive { background: var(--warn); box-shadow: none; }
+  .shot-nav .chip .d.missing { background: transparent; box-shadow: 0 0 0 1px var(--faint) inset; opacity: .5; }
+  .shot-nav .chip.active .d { box-shadow: 0 0 0 1px rgba(255,255,255,.6) inset; }
+  details.fold { margin: 8px 0; }
+  details.fold > summary { cursor: pointer; font-size: 12.5px; color: var(--dim); user-select: none; padding: 4px 0; }
+  details.fold > summary:hover { color: var(--text); }
+  .warnings { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--warn);
+              border-radius: var(--r-sm); padding: 11px 15px; margin: 12px 0 18px; font-size: 12.5px;
+              color: var(--text); box-shadow: var(--shadow-sm); }
+  .warnings div { margin: 3px 0; }
+  .readonly-note { background: var(--panel2); border: 1px solid var(--border); border-radius: var(--r-sm);
+                    padding: 11px 15px; margin: 12px 0 18px; font-size: 12.5px; color: var(--dim); }
+  /* 项目级花费汇总：跟 .warnings/.readonly-note 同一套卡片
+     语言，不单独发明一种视觉语汇。 */
+  .cost-summary { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-sm);
+                   padding: 10px 15px; margin: 12px 0; font-size: 12.5px; color: var(--dim);
+                   box-shadow: var(--shadow-sm); }
+  .cost-summary b { color: var(--text); }
+  .shot { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md);
+          padding: 17px 19px; margin-bottom: 14px; scroll-margin-top: 14px; box-shadow: var(--shadow-sm); }
+  .shot-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .shot-top .sid { font-weight: 700; font-size: 13.5px; }
+  .shot-meta { font-size: 11.5px; color: var(--dim); margin-top: 3px; }
+  .budget { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; flex-shrink: 0; }
+  .budget.ok { background: var(--good-bg); color: var(--good); }
+  .budget.warn { background: var(--warn-bg); color: var(--warn); }
+  .budget.bad { background: var(--bad-bg); color: var(--bad); }
+  table.lines { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12.5px; }
+  table.lines td { border-top: 1px solid var(--border-soft); padding: 7px 5px; vertical-align: top; }
+  table.lines td.who { width: 90px; color: var(--dim); font-weight: 500; }
+  table.lines td.win { width: 100px; color: var(--faint); font-variant-numeric: tabular-nums; }
+  table.lines textarea { width: 100%; background: var(--panel2); color: var(--text);
+                          border: 1px solid var(--border); border-radius: var(--r-sm); padding: 7px 9px;
+                          font-family: inherit; font-size: 12.5px; resize: vertical; min-height: 34px;
+                          transition: border-color .12s ease; }
+  table.lines textarea:focus { outline: none; border-color: var(--accent); }
+  .row2 { display: flex; gap: 10px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
+  select { background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+           border-radius: var(--r-sm); padding: 7px 11px; font-size: 12.5px; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; font-size: 12px; color: var(--dim); font-weight: 500; }
+  summary:hover { color: var(--text); }
+  pre { white-space: pre-wrap; word-break: break-word; font-size: 11.5px; background: var(--panel2);
+        border: 1px solid var(--border); border-radius: var(--r-sm); padding: 11px; margin-top: 6px; }
+
+  .gen-panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md);
+               padding: 15px 17px; margin: 14px 0 18px; display: flex; gap: 10px; flex-wrap: wrap;
+               align-items: center; box-shadow: var(--shadow-sm); }
+  .gen-panel .hint { font-size: 12.5px; color: var(--dim); flex-basis: 100%; }
+  .gen-btn, .save-btn, .new-btn, .review-btn, .cancel-btn {
+    transition: filter .12s ease, box-shadow .12s ease, transform .08s ease, background .12s ease, border-color .12s ease;
+  }
+  .gen-btn:hover:not(:disabled) { background: var(--panel3); border-color: var(--accent); transform: translateY(-1px); }
+  .save-btn:hover:not(:disabled), .new-btn:hover, .review-btn:hover, .cancel-btn:hover {
+    filter: brightness(1.15); box-shadow: var(--shadow-sm); transform: translateY(-1px);
+  }
+  .gen-btn:active:not(:disabled), .save-btn:active:not(:disabled) { transform: translateY(0); filter: brightness(1); }
+  .gen-btn { background: var(--panel3); color: var(--text); border: 1px solid var(--border); border-radius: var(--r-sm);
+             padding: 9px 16px; font-size: 13px; cursor: pointer; font-weight: 600; }
+  .gen-btn:disabled { opacity: .35; cursor: not-allowed; }
+  .gen-btn.danger { background: var(--bad-bg); color: var(--bad); border-color: rgba(242,99,122,.35); }
+  /* 花钱操作单独标出来：同样是 .gen-btn，"生成首帧/视频"这类真的会调用付费
+     接口，"锁定草稿"/"生成成片（本地 ffmpeg）"/配置页的增删改都不花钱——
+     以前全用同一种中性灰边框按钮，分不清哪个会花钱。用暖色边框+文字标出来，
+     跟 .warnings/.badge.locked 用的是同一个 warn 语义色，不是另起一套。 */
+  .gen-btn.spend { border-color: rgba(180,83,9,.4); color: var(--warn); }
+  .gen-btn.spend:hover:not(:disabled) { background: var(--warn-bg); border-color: var(--warn); }
+  /* 单镜「保存」是高频的本地免费操作（改改台词/运镜），跟"保存为新项目"
+     这种页面级、低频、真正落盘新项目的操作不该用一样的实心强调色——那样
+     会让每一镜卡片里都有一个视觉权重跟"新建项目"按钮打平的色块，反而
+     稀释了实心色本该有的"这是个大动作"信号。降级成边框按钮，还是用
+     accent 色但不铺底。 */
+  .save-btn.compact { background: var(--panel2); color: var(--accent-strong); border: 1px solid var(--border);
+                       box-shadow: none; padding: 7px 14px; font-size: 12.5px; font-weight: 600; }
+  .save-btn.compact:hover:not(:disabled) { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+  .gen-status { font-size: 12.5px; color: var(--dim); }
+  .save-status { font-size: 11.5px; color: var(--dim); }
+  .save-status.err { color: var(--bad); }
+  .save-status.ok { color: var(--good); }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(6,7,10,.65); backdrop-filter: blur(2px);
+                   display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-lg);
+               padding: 22px 24px; width: 440px; max-width: 90vw; max-height: 80vh; overflow-y: auto;
+               box-shadow: var(--shadow-lg); }
+  .modal-box h3 { margin: 0 0 10px; font-size: 16px; font-weight: 700; }
+  .modal-box table { width: 100%; font-size: 12.5px; border-collapse: collapse; margin: 10px 0; }
+  .modal-box td { padding: 5px 6px; border-top: 1px solid var(--border-soft); }
+  .modal-box .row2 { justify-content: flex-end; margin-top: 16px; }
+  .modal-box .cancel-btn { background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+                            border-radius: var(--r-sm); padding: 9px 16px; font-size: 13px; cursor: pointer; }
+
+  .media-row { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .media-cell { flex: 1; min-width: 160px; }
+  .media-cell img, .media-cell video { width: 100%; border-radius: var(--r-sm); border: 1px solid var(--border);
+                                        display: block; background: var(--panel2); }
+  .media-cell .cap { font-size: 11px; color: var(--dim); margin: 4px 0 6px; display: flex;
+                      justify-content: space-between; align-items: center; }
+  /* 签名元素：QC 裁决用真的"盖章"读法，不是红绿灯配色——通过/重摇/豁免
+     三种都是"已经有一个正式裁决"，用同一种朱红印泥；裁决内容看章上刻的字
+     （可/退/免），不看颜色，就跟现实里的印章一样，颜色不承载是非判断。
+     待审（.none）是空白虚线框——还没盖章，不是"盖了一个灰色的章"，语义
+     上是两回事，视觉上也该是两回事。 */
+  .qc-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600;
+              padding: 1px 8px 1px 1px; border-radius: var(--r-sm); color: var(--dim); }
+  .qc-badge::before {
+    content: '';
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 15px; height: 15px;
+    font-family: var(--display); font-size: 10px; font-weight: 700; line-height: 1;
+    border: 1.3px solid var(--border); border-radius: 3px;
+    transform: rotate(-6deg);
+  }
+  .qc-badge.pass::before { content: '可'; border-color: var(--chop); background: var(--chop-bg); color: var(--chop); }
+  .qc-badge.retake::before { content: '退'; border-color: var(--chop); background: var(--chop-bg); color: var(--chop); }
+  .qc-badge.waive::before { content: '免'; border-color: var(--chop); background: var(--chop-bg); color: var(--chop); }
+  .qc-badge.none::before { border-style: dashed; transform: none; }
+  .review-row { display: flex; gap: 6px; }
+  .review-btn { font-size: 11px; padding: 4px 10px; border-radius: var(--r-sm); cursor: pointer;
+                border: 1px solid var(--border); background: var(--panel2); color: var(--text); font-weight: 600; }
+  /* 按钮不预判是非——章色是"已裁决"的通用记号，不是"好/坏"红绿灯，两个
+     按钮同色，靠文字（通过/重摇）区分，跟上面 .qc-badge 是同一套逻辑。 */
+  .review-btn.pass, .review-btn.retake { border-color: rgba(166,57,42,.35); color: var(--chop); }
+
+  /* 主操作按钮：纯色、不带渐变/发光——渐变+彩色光晕这套组合是通用模板/AI
+     生成界面的老套路了，克制的深色 UI（Linear/Vercel/Stripe 那种）用的是
+     一个确定的实色，不靠渐变和光晕堆视觉重量。 */
+  .new-btn { background: var(--accent-strong); color: #fff; border: none;
+             border-radius: var(--r-sm); padding: 9px 12px; font-size: 12.5px; cursor: pointer; font-weight: 700;
+             width: 100%; box-shadow: var(--shadow-sm); }
+  .save-btn { background: var(--accent-strong); color: #fff; border: none;
+              border-radius: var(--r-sm); padding: 9px 16px; font-size: 13px; cursor: pointer; font-weight: 700;
+              box-shadow: var(--shadow-sm); }
+  .new-btn:hover, .save-btn:hover:not(:disabled) { background: var(--accent); }
+  .save-btn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+  .new-project-form { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-md);
+                       padding: 22px 24px; max-width: 680px; box-shadow: var(--shadow-sm); }
+  .new-project-form h2, .new-project-form h3 { font-weight: 700; letter-spacing: -.01em; }
+  .field-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 13px; }
+  .field-row label { font-size: 12px; color: var(--dim); font-weight: 500; }
+  .field-row input, .field-row textarea, .field-row select {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: var(--r-sm); padding: 8px 11px; font-size: 13px; font-family: inherit;
+    transition: border-color .12s ease, box-shadow .12s ease;
+  }
+  .field-row input:focus, .field-row textarea:focus, .field-row select:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg);
+  }
+  .field-row textarea { resize: vertical; min-height: 80px; }
+  .draft-json { width: 100%; min-height: 420px; font-family: ui-monospace, Consolas, monospace;
+                font-size: 12px; background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+                border-radius: var(--r-sm); padding: 13px; }
+  /* 恢复条：以前是一整条铺满窗口宽度的色块，跟侧边栏都压在一起，视觉上很粗暴。
+     改成右下角的浮动通知卡片堆叠——不遮内容，不喧宾夺主，多条时自然往上叠。 */
+  #cache-banner { position: fixed; right: 20px; bottom: 20px; z-index: 60; display: flex;
+                  flex-direction: column-reverse; gap: 10px; max-width: 340px; pointer-events: none; }
+  #cache-banner:empty { display: none; }
+  .toast { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--warn);
+           border-radius: var(--r-md); padding: 13px 15px; font-size: 12.5px; color: var(--text);
+           box-shadow: var(--shadow-lg); display: flex; flex-direction: column; gap: 8px;
+           pointer-events: auto; }
+  .toast .toast-msg { color: var(--warn); line-height: 1.5; }
+  .toast .toast-msg b { color: var(--text); }
+  .toast .toast-actions { display: flex; gap: 6px; }
+  .toast button { font-size: 11.5px; padding: 5px 11px; border-radius: var(--r-sm); cursor: pointer;
+                  border: 1px solid var(--border); background: var(--panel2); color: var(--text); font-weight: 600; }
+  /* 环境提示条（ffmpeg 缺失这类"不修好后面一定会卡住"的事）：跟 .warnings 同一套
+     "白卡片 + 左侧色条"语言，放在 header 正下方、layout 之上，不遮内容。 */
+  #system-banner:empty { display: none; }
+  #system-banner .sys-banner { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    padding: 9px 24px; font-size: 12.5px; background: var(--panel); border-bottom: 1px solid var(--border);
+    border-left: 3px solid var(--warn); color: var(--text); }
+  #system-banner .sys-banner code { font-family: var(--mono); font-size: 11.5px; background: var(--panel2);
+    padding: 1px 6px; border-radius: 3px; }
+  #system-banner .sys-banner a { color: var(--accent-strong); font-weight: 600; }
+  .layout.with-banner { height: calc(100vh - 50px - 38px); }
+  /* 空状态引导：没有任何项目时主区不再只有一句"从左边选一个项目"，而是三步
+     卡片，每步一个按钮，已完成的步骤盖章（复用 .qc-badge 的印章语言）。 */
+  .onboard { max-width: 720px; margin: 28px auto; }
+  .onboard h2 { font-family: var(--display); font-size: 20px; margin: 0 0 6px; }
+  .onboard > p { color: var(--dim); font-size: 13px; margin: 0 0 18px; }
+  .onboard .step { display: flex; gap: 16px; align-items: flex-start; background: var(--panel);
+    border: 1px solid var(--border); border-radius: var(--r-md); padding: 16px 18px; margin-bottom: 12px;
+    box-shadow: var(--shadow-sm); }
+  .onboard .step .n { font-family: var(--display); font-size: 22px; font-weight: 700; color: var(--faint);
+    width: 28px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+  .onboard .step.done .n { color: var(--chop); }
+  .onboard .step .body { flex: 1; }
+  .onboard .step .body b { font-size: 14px; }
+  .onboard .step .body p { margin: 4px 0 10px; color: var(--dim); font-size: 12.5px; line-height: 1.55; }
+  .onboard .step .body .row2 { margin-top: 0; }
+  .onboard .roles { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; }
+  .onboard .roles .pill { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--panel2); color: var(--dim); }
+  .onboard .roles .pill.ok { background: var(--good-bg); color: var(--good); border-color: transparent; }
+  /* 示例剧集卡片（新建项目页顶部 / 空状态第二步） */
+  .example-card { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: var(--panel2);
+    border: 1px solid var(--border); border-radius: var(--r-sm); padding: 11px 13px; margin: 8px 0; }
+  .example-card .meta { flex: 1; min-width: 220px; font-size: 12.5px; }
+  .example-card .meta b { display: block; font-size: 13.5px; margin-bottom: 2px; }
+  .example-card .meta span { color: var(--dim); }
+  .example-card input { width: 170px; padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--r-sm);
+    background: var(--panel); color: var(--text); font: inherit; font-size: 12.5px; }
+  .role-hint { flex-basis: 100%; font-size: 12.5px; color: var(--warn); background: var(--warn-bg);
+    border-radius: var(--r-sm); padding: 8px 11px; }
+  .role-hint a { color: var(--accent-strong); font-weight: 600; cursor: pointer; text-decoration: underline; }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo-dot"></span>
+  <h1>Content Cook · 内容创作工作台</h1>
+  <span class="tag" id="app-tag">本地版 · 数据不出本机</span>
+</header>
+<div id="global-progress"><div class="fill"></div></div>
+<div id="cache-banner"></div>
+<div id="system-banner"></div>
+<div class="layout" id="layout">
+  <aside id="sidebar"></aside>
+  <main id="main"><div class="empty">从左边选一个项目</div></main>
+</div>
+<script>
+const api = (path, opts) => fetch(path, opts).then(async r => {
+  const body = await r.json().catch(() => null);
+  if (!r.ok) throw new Error((body && body.detail) || r.statusText);
+  return body;
+});
+
+let state = { episodes: [], current: null, cameraOptions: null, health: null };
+
+// 运行环境自检（/api/health）：版本号进头部标签；ffmpeg 缺失时在 header 下方挂一条
+// 提示（装配、后期层、台词识别全都靠它，缺了后面一定卡住，与其到时候报错不如一
+// 打开就说清楚）；四个模型角色的配置状态给空状态引导和项目页的生成面板用。
+// 设置页保存之后会再调一次（settings.js），状态跟着变。
+async function loadHealth() {
+  try {
+    state.health = await api('/api/health');
+  } catch (e) {
+    state.health = null;
+    return null;
+  }
+  const h = state.health;
+  const tag = document.getElementById('app-tag');
+  if (tag) tag.textContent = `v${h.version} · 本地版 · 数据不出本机`;
+  const banner = document.getElementById('system-banner');
+  const layout = document.getElementById('layout');
+  if (banner) {
+    if (h.ffmpeg_ok) {
+      banner.innerHTML = '';
+      layout?.classList.remove('with-banner');
+    } else {
+      banner.innerHTML = `<div class="sys-banner">⚠ 没在 PATH 里找到 <code>ffmpeg</code> / <code>ffprobe</code>——
+        首帧和视频生成不受影响，但「生成成片」「后期层」「台词识别闸」都需要它。
+        <a href="${escapeHtml(h.ffmpeg_download_url)}" target="_blank" rel="noopener">去下载</a>
+        ${h.frozen ? '，把 ffmpeg.exe 和 ffprobe.exe 放进程序所在目录（或它下面的 ffmpeg/ 子目录）后重启即可。' : '，装好后重启服务即可。'}</div>`;
+      layout?.classList.add('with-banner');
+    }
+  }
+  return h;
+}
+
+function roleConfigured(role) {
+  return !!(state.health && state.health.roles && state.health.roles[role] && state.health.roles[role].configured);
+}
+
+const ROLE_SHORT = { text: '剧本文本', image: '生图', voice: '语音', video: '视频' };
+
+// 生成面板里的"这个角色还没配"提示：只列跟当前面板相关的角色，给一个直达设置页的链接。
+function unconfiguredRolesHtml(roles) {
+  if (!state.health) return '';
+  const missing = roles.filter(r => !roleConfigured(r));
+  if (!missing.length) return '';
+  return `<div class="role-hint">还没配置：${missing.map(r => ROLE_SHORT[r]).join('、')}模型——生成会在提交时被拒。
+    <a data-goto-settings>去「模型设置」填好</a></div>`;
+}
+
+function wireSettingsLinks(root) {
+  (root || document).querySelectorAll('[data-goto-settings]').forEach(a => { a.onclick = (e) => { e.preventDefault(); showSettingsPage(); }; });
+}
+
+// 空状态引导：一个项目都没有的时候，主区显示三步（配模型 → 起草/导入 → 出首帧）。
+// 每步一个按钮；第一步按 /api/health 的角色状态盖章。
+function renderOnboarding() {
+  const main = document.getElementById('main');
+  const h = state.health;
+  const roles = ['text', 'image', 'video', 'voice'];
+  const rolesHtml = roles.map(r => `<span class="pill ${roleConfigured(r) ? 'ok' : ''}">${roleConfigured(r) ? '✓ ' : ''}${ROLE_SHORT[r]}</span>`).join('');
+  const coreReady = roleConfigured('image') && roleConfigured('video');
+  main.innerHTML = `<div class="onboard">
+    <h2>三步出第一条首帧</h2>
+    <p>所有数据留在本机；生成模型用你自己的账号，密钥只存在这台电脑上。</p>
+    <div class="step ${coreReady ? 'done' : ''}">
+      <div class="n">1</div>
+      <div class="body"><b>配好模型</b>
+        <p>四类角色各选一个来源、填自己的密钥。只有一个 OpenRouter key 也够：文本、生图、视频、语音都能走它。语音可以先用免费的 Edge TTS。</p>
+        <div class="roles">${h ? rolesHtml : '<span class="pill">读取状态中…</span>'}</div>
+        <div class="row2"><button class="gen-btn" data-onboard="settings">🔌 打开模型设置</button></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <div class="body"><b>拿到一个项目</b>
+        <p>最快的路是从示例剧集开始：5 镜、有台词、有旁白、有一张插卡，复制成你的项目后可以随便改。也可以用一句话让文本模型起草整集。</p>
+        <div id="onboard-examples"></div>
+        <div class="row2"><button class="gen-btn" data-onboard="draft">+ 用 AI 起草一集</button></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <div class="body"><b>出首帧</b>
+        <p>打开项目 → 「锁定草稿并进入生产」→ 先点某一镜的「只出这镜首帧」看风格，满意再整批生成。每次生成前都会先给出要提交几次请求的预估，确认了才花钱。</p>
+      </div>
+    </div>
+  </div>`;
+  main.querySelector('[data-onboard="settings"]').onclick = showSettingsPage;
+  main.querySelector('[data-onboard="draft"]').onclick = showNewProjectForm;
+  renderExampleStarter(document.getElementById('onboard-examples'));
+}
+
+// 示例剧集列表 + 「复制成新项目」：新建项目页顶部和空状态第二步共用。
+async function renderExampleStarter(container) {
+  if (!container) return;
+  let examples;
+  try {
+    examples = await api('/api/examples');
+  } catch (e) {
+    container.innerHTML = `<span class="save-status err">示例列表读取失败：${escapeHtml(e.message)}</span>`;
+    return;
+  }
+  if (!examples.length) { container.innerHTML = ''; return; }
+  container.innerHTML = examples.map(ex => `
+    <div class="example-card" data-example="${escapeHtml(ex.name)}">
+      <div class="meta"><b>${escapeHtml(ex.title)}</b>
+        <span>${escapeHtml(ex.logline)}</span><br>
+        <span>${ex.shot_count} 镜 · 约 ${Math.round(ex.total_seconds)}s · profile ${escapeHtml(ex.camera_profile)}${ex.has_voice_over ? ' · 有旁白' : ''}${ex.has_inserts ? ' · 有插卡' : ''}</span>
+      </div>
+      <input type="text" data-example-id placeholder="新项目 id，如 DEMO-001" value="DEMO-001" />
+      <button class="save-btn compact" data-example-create>复制成新项目（不花钱）</button>
+      <span class="save-status" data-example-status></span>
+    </div>`).join('');
+  container.querySelectorAll('.example-card').forEach(card => {
+    const btn = card.querySelector('[data-example-create]');
+    btn.onclick = () => withProgress(async () => {
+      const id = card.querySelector('[data-example-id]').value.trim();
+      const status = card.querySelector('[data-example-status]');
+      status.className = 'save-status';
+      if (!id) { status.className = 'save-status err'; status.textContent = '先填一个项目 id'; return; }
+      status.textContent = '复制中…';
+      try {
+        const result = await api(`/api/examples/${encodeURIComponent(card.dataset.example)}/create`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ episode_id: id }),
+        });
+        await loadSidebar();
+        await selectEpisode('storyvideo', result.id);
+      } catch (e) {
+        status.className = 'save-status err';
+        status.textContent = '失败：' + e.message;
+      }
+    });
+  });
+}
+
+// 全局进度条：之前"进度"就是一行灰色文字，没有任何真正的可视化。这里给一条
+// 顶部滑动条，任何一个真实的异步操作（起草轮询、生成轮询、保存……）跑着的时候
+// 就亮起来。用计数器而不是布尔值，是因为可能同时有嵌套/连续的操作。
+let _progressDepth = 0;
+function showProgress() {
+  _progressDepth++;
+  document.getElementById('global-progress')?.classList.add('active');
+}
+function hideProgress() {
+  _progressDepth = Math.max(0, _progressDepth - 1);
+  if (!_progressDepth) document.getElementById('global-progress')?.classList.remove('active');
+}
+async function withProgress(fn) {
+  showProgress();
+  try {
+    return await fn();
+  } finally {
+    hideProgress();
+  }
+}
+
+// 项目数一多，纯靠眼睛扫会越来越慢——搜索框在客户端过滤，几十到几百个项目
+// 这个量级完全够用；真到了要服务端分页/搜索的规模再说，现在没必要先做那一层。
+// 状态筛选（全部/草稿/已冻结/失败）跟搜索是同一套隐藏机制，两个条件是"且"的
+// 关系——没有另起一套分组结构，是因为项目已经按 pipeline 分好组了，状态是
+// 另一个筛选维度，不是另一层分组，用 chips 过滤比嵌套子分组更轻。
+function filterSidebar(query) {
+  const q = query.trim().toLowerCase();
+  const statusFilter = state.statusFilter || 'all';
+  document.querySelectorAll('aside .item').forEach(el => {
+    const matchQuery = !q || el.dataset.id.toLowerCase().includes(q);
+    const matchStatus = statusFilter === 'all' || el.dataset.status === statusFilter;
+    el.classList.toggle('hidden-by-search', !(matchQuery && matchStatus));
+  });
+  document.querySelectorAll('aside .group-title').forEach(title => {
+    // 折叠的分组本来就不渲染任何 .item——之前这里把"折叠了、没有元素可数"
+    // 和"搜索没匹配到"当成了同一回事，导致标题本身被隐藏，点不到了也就
+    // 没法再展开。折叠的分组标题必须永远可见，不受搜索结果影响。
+    if (state.collapsedGroups.has(title.dataset.pipeline)) {
+      title.style.display = '';
+      return;
+    }
+    const next = title.nextElementSibling;
+    let hasVisible = false;
+    let node = next;
+    while (node && node.classList && node.classList.contains('item')) {
+      if (!node.classList.contains('hidden-by-search')) hasVisible = true;
+      node = node.nextElementSibling;
+    }
+    title.style.display = hasVisible ? '' : 'none';
+  });
+}
+
+// 分组不再写死 pipeline 名单——以后不管加多少新的产线/分类，这里都跟着自动
+// 长出新的分组，不用改代码。每组默认展开，点标题折叠/展开；折叠状态记在
+// state.collapsedGroups（只活在当前页面的内存里，刷新页面重新全展开，够用，
+// 没必要为这个上持久化存储）。纯渲染函数，不发请求——折叠/展开只是重画列表，
+// 不用每次都重新拉一次 /api/episodes。
+function renderSidebarList() {
+  const list = document.querySelector('#sidebar .item-list');
+  if (!list) return;
+  list.innerHTML = '';
+  const groups = {};
+  for (const ep of state.episodes) (groups[ep.pipeline] = groups[ep.pipeline] || []).push(ep);
+  for (const [pipeline, items] of Object.entries(groups)) {
+    if (!items.length) continue;
+    const collapsed = state.collapsedGroups.has(pipeline);
+    const title = document.createElement('div');
+    title.className = 'group-title';
+    title.dataset.pipeline = pipeline;
+    title.innerHTML = `<span class="chevron${collapsed ? ' collapsed' : ''}">▾</span>` +
+      `<span>${pipeline}</span><span class="gcount">${items.length}</span>`;
+    title.onclick = () => {
+      if (state.collapsedGroups.has(pipeline)) state.collapsedGroups.delete(pipeline);
+      else state.collapsedGroups.add(pipeline);
+      renderSidebarList();
+    };
+    list.appendChild(title);
+    if (collapsed) continue;
+    for (const ep of items) {
+      const el = document.createElement('div');
+      el.className = 'item';
+      if (state.current && state.current.id === ep.id && state.current.pipeline === ep.pipeline) {
+        el.classList.add('active');
+      }
+      el.dataset.id = ep.id;
+      el.dataset.pipeline = ep.pipeline;
+      const status = ep.status === 'error' ? 'error' : ep.locked ? 'locked' : 'draft';
+      el.dataset.status = status;
+      const badge = status === 'error' ? `<span class="badge error">解析失败</span>`
+        : status === 'locked' ? `<span class="badge locked">已冻结</span>`
+        : `<span class="badge draft">草稿</span>`;
+      el.innerHTML = `<span class="id">${ep.id}</span>${badge}`;
+      el.onclick = () => selectEpisode(ep.pipeline, ep.id);
+      list.appendChild(el);
+    }
+  }
+  filterSidebar(document.getElementById('sidebar-search')?.value || '');
+}
+
+// 状态筛选 chips：全部/草稿/已冻结（+ 有的话再加"解析失败"）。跟搜索框共用
+// filterSidebar 的隐藏逻辑，点一下就是"且"过滤，再点"全部"清空。
+function renderStatusChips(episodes) {
+  const counts = { draft: 0, locked: 0, error: 0 };
+  for (const ep of episodes) {
+    const status = ep.status === 'error' ? 'error' : ep.locked ? 'locked' : 'draft';
+    counts[status]++;
+  }
+  const defs = [
+    ['all', '全部', episodes.length],
+    ['draft', '草稿', counts.draft],
+    ['locked', '已冻结', counts.locked],
+  ];
+  if (counts.error) defs.push(['error', '解析失败', counts.error]);
+  const row = document.createElement('div');
+  row.id = 'status-chips';
+  row.innerHTML = defs.map(([key, label, n]) =>
+    `<button class="chip${(state.statusFilter || 'all') === key ? ' active' : ''}" data-status-chip="${key}">${label} <span class="n">${n}</span></button>`
+  ).join('');
+  row.querySelectorAll('[data-status-chip]').forEach(btn => {
+    btn.onclick = () => {
+      state.statusFilter = btn.dataset.statusChip;
+      row.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.statusChip === state.statusFilter));
+      filterSidebar(document.getElementById('sidebar-search')?.value || '');
+    };
+  });
+  return row;
+}
+
+async function loadSidebar() {
+  state.episodes = await api('/api/episodes');
+  state.collapsedGroups = state.collapsedGroups || new Set();
+  state.statusFilter = state.statusFilter || 'all';
+  const sidebar = document.getElementById('sidebar');
+  sidebar.innerHTML = '';
+  const newRow = document.createElement('div');
+  newRow.style.padding = '12px 16px 0';
+  newRow.innerHTML = '<button class="new-btn">+ 新建项目（AI 起草）</button>';
+  newRow.querySelector('button').onclick = showNewProjectForm;
+  sidebar.appendChild(newRow);
+  const configRow = document.createElement('div');
+  configRow.style.padding = '8px 16px 0';
+  configRow.innerHTML = '<button class="gen-btn" style="width:100%">⚙ 基础配置</button>';
+  configRow.querySelector('button').onclick = showConfigPage;
+  sidebar.appendChild(configRow);
+  const modelRow = document.createElement('div');
+  modelRow.style.padding = '8px 16px 0';
+  modelRow.innerHTML = '<button class="gen-btn" style="width:100%">🔌 模型设置</button>';
+  modelRow.querySelector('button').onclick = showSettingsPage;
+  sidebar.appendChild(modelRow);
+  const search = document.createElement('input');
+  search.id = 'sidebar-search';
+  search.placeholder = `搜索项目 id…（共 ${state.episodes.length} 个）`;
+  search.oninput = () => {
+    const q = search.value.trim();
+    // 搜索时临时展开所有折叠的分组，不然被折叠的分组里的匹配项根本不在 DOM
+    // 里、搜不到；清空搜索词后恢复到搜索前的折叠状态，不丢用户的手动选择。
+    if (q && state.collapsedGroups.size && !state._collapsedBeforeSearch) {
+      state._collapsedBeforeSearch = new Set(state.collapsedGroups);
+      state.collapsedGroups.clear();
+      renderSidebarList();
+    } else if (!q && state._collapsedBeforeSearch) {
+      state.collapsedGroups = state._collapsedBeforeSearch;
+      state._collapsedBeforeSearch = null;
+      renderSidebarList();
+    }
+    filterSidebar(search.value);
+  };
+  sidebar.appendChild(search);
+  sidebar.appendChild(renderStatusChips(state.episodes));
+  const list = document.createElement('div');
+  list.className = 'item-list';
+  sidebar.appendChild(list);
+  renderSidebarList();
+  // 一个项目都没有、主区也还没在看别的页面（设置页/新建页）：显示三步引导
+  const main = document.getElementById('main');
+  if (!state.episodes.length && !state.current && main.querySelector('.empty')) renderOnboarding();
+}
+
+async function selectEpisode(pipeline, id) {
+  document.querySelectorAll('aside .item').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === id && el.dataset.pipeline === pipeline);
+  });
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="empty">加载中…</div>';
+  let detail;
+  try {
+    detail = await api(`/api/episodes/${pipeline}/${id}`);
+  } catch (e) {
+    main.innerHTML = `<div class="empty">加载失败：${e.message}</div>`;
+    return;
+  }
+  state.current = { pipeline, id, detail };
+  if (detail.editable && !state.cameraOptions) {
+    state.cameraOptions = await api(
+      `/api/camera-options${detail.camera_profile ? '?profile=' + detail.camera_profile : ''}`
+    );
+  }
+  renderEpisode();
+}
+
+function budgetClass(b) {
+  if (!b) return 'ok'; // 草稿态某一镜编译失败时 budget 可能是 null（见 _draft_shot_view）
+  if (b.overflow) return 'bad';
+  if (b.declared_dur > 0 && b.slack_ratio > 0.35) return 'warn';
+  return 'ok';
+}
+
+function renderEpisode() {
+  const { pipeline, id, detail } = state.current;
+  const main = document.getElementById('main');
+  const lockNote = detail.locked
+    ? `<span class="badge locked">已冻结，不能编辑——改设计要开新 revision</span>`
+    : detail.editable ? `<span class="badge draft">草稿，可编辑</span>` : '';
+  // 「开新 revision」只在已锁定的 storyvideo 项目上露出：未锁定草稿理论上也能调，
+  // 但直接改原草稿更直接，不特意暴露这个入口，免得引诱人两边各改一点、
+  // 内容分叉了自己却没发现。
+  const reviseBtn = (pipeline === 'storyvideo' && detail.locked)
+    ? `<button class="gen-btn" id="revise-episode-btn">复制为新 revision</button>` : '';
+  let html = `<div class="ep-header"><h2>${id}</h2>${lockNote}${reviseBtn}
+    <button class="gen-btn danger" id="delete-episode-btn" style="margin-left:auto">归档删除</button>
+  </div>`;
+  if (detail.readonly_reason) {
+    html += `<div class="readonly-note">${detail.readonly_reason}</div>`;
+  }
+  // 生成面板 / 单镜「只出这一镜」按钮 / 媒体审核（frames/videos/final 三档）只对 storyvideo 项目开。
+  const canGenerate = pipeline === 'storyvideo';
+  if (canGenerate) html += renderGenPanel(detail, pipeline);
+  html += renderFinalPanel(detail);
+  if (detail.warnings && detail.warnings.length) {
+    // 折叠：几十条「台词占比」提醒平铺开来占满一屏，会把镜次卡片全挤到下面
+    html += `<details class="fold"><summary>⚠ ${detail.warnings.length} 条校验提醒（展开看）</summary>`
+      + '<div class="warnings">' + detail.warnings.map(w => `<div>⚠ ${w}</div>`).join('') + '</div></details>';
+  }
+  if (pipeline === 'storyvideo') html += `<div id="post-layers-panel"></div>`;
+  const grid = renderShotGrid(detail.shots);
+  if (grid) html += `<details class="fold"><summary>首帧缩略图总览（展开看）</summary>${grid}</details>`;
+  html += renderShotNav(detail.shots);
+  if (pipeline === 'storyvideo') html += `<div id="job-history"></div>`;
+  const showGenRow = canGenerate && detail.locked;
+  for (const shot of detail.shots) {
+    html += renderShot(shot, { editable: detail.editable, showGenRow });
+  }
+  main.innerHTML = html;
+  wireShotNav();
+  wireSettingsLinks(main);
+  if (detail.editable) {
+    wireShotHandlers(shotId => state.current.detail.shots.find(s => s.id === shotId), saveEpisodeShot);
+  }
+  if (canGenerate) { wireGenHandlers(); wireReviewHandlers(); wireLocalStepHandlers(); }
+  if (pipeline === 'storyvideo') { renderCostSummary(id); renderPostLayersPanel(id); } // 花费汇总是起草 job 系统的数据
+  document.getElementById('delete-episode-btn').onclick = () => deleteCurrentEpisode(pipeline, id);
+  const reviseEl = document.getElementById('revise-episode-btn');
+  if (reviseEl) reviseEl.onclick = () => reviseCurrentEpisode(id);
+}
+
+// 开新 revision：只复制 spec，不碰生成产物——跟后端
+// /revise 端点是同一个原则。用页面内输入框（showPromptModal）要新 id，跟单镜重写要反馈意见
+// 是同一个输入方式，不用另起一个表单弹窗。
+async function reviseCurrentEpisode(oldId) {
+  const newId = await showPromptModal('给新 revision 起个 id（英文/数字/短横线，且还不存在）：', { defaultValue: oldId + '-v2', multiline: false, confirmLabel: '创建' });
+  if (!newId || !newId.trim()) return; // 用户取消或留空
+  await withProgress(async () => {
+    let result;
+    try {
+      result = await api(`/api/episodes/storyvideo/${oldId}/revise`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ new_episode_id: newId.trim() }),
+      });
+    } catch (e) {
+      showNoticeModal('开新 revision 失败：' + e.message);
+      return;
+    }
+    await loadSidebar();
+    await selectEpisode('storyvideo', result.id);
+  });
+}
+
+// 删除是归档，不是真删——跟后端的 DELETE 端点是同一个原则。
+// 确认用 showConfirmModal（跟应用同一套卡片视觉语言），不用原生 confirm()——
+// 原生弹窗是浏览器自己的样式，用户截图反馈过跟整个应用完全不搭。
+async function deleteCurrentEpisode(pipeline, id) {
+  const sure = await showConfirmModal(
+    `确定归档「${id}」？\n\n不是真删——spec 和已经生成的首帧/视频（如果有）会一起` +
+    `搬进 .webui_deleted/ 目录，不会出现在项目列表里，但文件都还在，想找回去` +
+    `手动把那个目录搬回来就行。`,
+    { confirmLabel: '确定归档' }
+  );
+  if (!sure) return;
+  // 整段包 try/catch，不只包 api() 那一行——之前只包了付费/写操作那一句，
+  // 如果后面 loadSidebar() 这类收尾步骤本身抛错，会变成一个没人接住的
+  // promise rejection：点击在用户看来"什么都没发生"，但其实归档在后端可能
+  // 已经成功了，界面只是没刷新、也没报错，非常容易被误判成"没生效"。
+  await withProgress(async () => {
+    try {
+      await api(`/api/episodes/${pipeline}/${id}`, { method: 'DELETE' });
+      state.current = null;
+      document.getElementById('main').innerHTML = '<div class="empty">已归档到 .webui_deleted/，从左边选别的项目看看</div>';
+      await loadSidebar();
+    } catch (e) {
+      showNoticeModal('归档失败或归档后刷新页面失败：' + e.message + '\n\n如果侧边栏里这个项目已经消失了，说明归档其实是成功的，只是收尾步骤报了错。');
+    }
+  });
+}
+
+// 镜次一多（16镜、20镜的项目并不少见）光靠纵向滚动很难有个全局印象——先出的
+// 一两镜想跟后面对比风格，得滚很久。这个网格给个一眼扫过的总览，点哪张跳到
+// 那一镜的详情卡片；没有任何首帧的项目（草稿阶段）不显示，没什么好总览的。
+// 镜次导航条：吸顶，每镜一个标签（镜号 + 首帧/视频两个 QC 点），点了平滑滚到那张卡片；
+// 输入框按镜号或台词过滤，回车跳到第一个命中；滚动时用 IntersectionObserver 高亮当前镜。
+// 成片面板：装配完成后在项目页顶部直接播放、下载、审核，不用去翻 output 目录。
+function renderFinalPanel(detail) {
+  if (!detail.final_url) return '';
+  const mb = detail.final_size_bytes ? (detail.final_size_bytes / 1048576).toFixed(1) + ' MB' : '';
+  const badge = qcBadge(detail.final_qc_decision);
+  const review = detail.final_qc_decision === 'retake'
+    ? `<span class="hint" style="margin:0;color:var(--chop)">成片已记重摇：改完相关镜次后再点「生成成片」重新拼接</span>`
+    : `<div class="review-row" data-review-gate="final" data-review-shot="final">
+         <button class="review-btn pass" data-review-decision="pass">成片通过</button>
+         <button class="review-btn retake" data-review-decision="retake">成片重摇</button>
+       </div>`;
+  return `<div class="gen-panel" id="final-panel" style="display:block">
+    <div class="row2" style="align-items:center;gap:10px;margin-bottom:8px">
+      <b style="font-size:14px">成片</b>${badge}
+      <span class="hint" style="margin:0">${detail.final_kind === 'post' ? '<b>后期合成版</b>（旁白 / 插卡 / 画面文字已叠）· ' : (detail.final_kind === 'final' ? '装配版 · ' : '')}${escapeHtml(detail.final_path || '')}${mb ? ' · ' + mb : ''}</span>
+      <a class="gen-btn" href="${detail.final_url}" download style="margin-left:auto;text-decoration:none">下载成片 mp4</a>
+    </div>
+    <video src="${detail.final_url}" controls preload="metadata" style="width:100%;max-width:420px;aspect-ratio:9/16;background:#000;border-radius:var(--r-md);display:block"></video>
+    <div style="margin-top:8px">${review}</div>
+  </div>`;
+}
+
+function renderShotNav(shots) {
+  if (!shots || shots.length < 6) return '';
+  const dot = (decision, has) => {
+    const cls = !has ? 'missing' : (decision === 'pass' ? 'pass' : decision === 'retake' ? 'retake' : decision === 'waive' ? 'waive' : '');
+    return `<span class="d ${cls}"></span>`;
+  };
+  const chips = shots.map(s => {
+    const text = (s.lines || []).map(l => l.zh || '').join(' ');
+    return `<a class="chip" href="#shot-${escapeHtml(s.id)}" data-nav-shot="${escapeHtml(s.id)}" data-nav-text="${escapeHtml((s.id + ' ' + text).toLowerCase())}"
+              title="${escapeHtml(text || s.id)}">${escapeHtml(s.id)}${dot(s.frame_qc_decision, !!s.frame_url)}${dot(s.video_qc_decision, !!s.video_url)}</a>`;
+  }).join('');
+  return `<div class="shot-nav" id="shot-nav">
+    <div class="nav-row">
+      <input type="search" data-nav-filter placeholder="镜号或台词关键字，回车跳转" autocomplete="off" />
+      <span class="nav-count" data-nav-count>${shots.length} 镜</span>
+      <span class="nav-count" style="margin-left:auto">● 左点=首帧 QC　右点=视频 QC　绿=通过　红=重摇　空=待审　灰=未生成</span>
+    </div>
+    <div class="chips">${chips}</div>
+  </div>`;
+}
+
+function wireShotNav() {
+  const nav = document.getElementById('shot-nav');
+  if (!nav) return;
+  const chips = [...nav.querySelectorAll('[data-nav-shot]')];
+  const jump = (id) => {
+    const el = document.getElementById(`shot-${id}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  chips.forEach(c => c.onclick = (e) => { e.preventDefault(); jump(c.dataset.navShot); });
+  const filter = nav.querySelector('[data-nav-filter]');
+  const count = nav.querySelector('[data-nav-count]');
+  filter.oninput = () => {
+    const q = filter.value.trim().toLowerCase();
+    let n = 0;
+    chips.forEach(c => { const hit = !q || c.dataset.navText.includes(q); c.classList.toggle('hidden', !hit); if (hit) n++; });
+    count.textContent = q ? `${n} / ${chips.length} 镜命中` : `${chips.length} 镜`;
+  };
+  filter.onkeydown = (e) => {
+    if (e.key === 'Enter') { const first = chips.find(c => !c.classList.contains('hidden')); if (first) jump(first.dataset.navShot); }
+    if (e.key === 'Escape') { filter.value = ''; filter.oninput(); }
+  };
+  // 滚动高亮当前镜：main 是滚动容器
+  const main = document.getElementById('main');
+  const cards = [...document.querySelectorAll('.shot[id^="shot-"]')];
+  if (!cards.length || typeof IntersectionObserver !== 'function') return;
+  const visible = new Map();
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) visible.set(en.target.id, en.intersectionRatio); else visible.delete(en.target.id); });
+    let best = null, bestRatio = -1;
+    visible.forEach((r, id) => { if (r > bestRatio) { bestRatio = r; best = id; } });
+    chips.forEach(c => c.classList.toggle('active', best === `shot-${c.dataset.navShot}`));
+  }, { root: main, threshold: [0.1, 0.35, 0.6] });
+  cards.forEach(el => io.observe(el));
+}
+
+function renderShotGrid(shots) {
+  if (!shots.some(s => s.frame_url)) return '';
+  const cells = shots.map(s => {
+    const qc = s.frame_qc_decision === 'pass' ? 'pass' : s.frame_qc_decision === 'waive' ? 'waive'
+      : s.frame_qc_decision === 'retake' ? 'retake' : 'none';
+    const inner = s.frame_url
+      ? `<img src="${s.frame_url}" /><span class="gqc ${qc}"></span>`
+      : `<div class="no-frame">未生成</div>`;
+    return `<a href="#shot-${s.id}" title="${s.id}">${inner}<span class="gid">${s.id}</span></a>`;
+  }).join('');
+  return `<div class="shot-grid">${cells}</div>`;
+}
+
+// 提交的 through 值、调的端点 URL 形状跟产线无关：URL 里带 pipeline，后端按它找项目。
+function renderGenPanel(detail, pipeline) {
+  const unit = '镜次';
+  const frameLabel = '生成首帧（全部）';
+  const videoLabel = '生成视频（全部）';
+  if (!detail.locked && detail.needs_import_legacy) {
+    return `<div class="gen-panel">
+      <span class="hint">本地已经有生成过的首帧/视频文件，但状态账本里没有登记——直接锁定会被拒绝
+      （系统不敢把已经生成、可能已经花过钱的东西当成没生成过）。先导入登记，不会调用付费接口，
+      只是读本地文件、核实、记进账本。</span>
+      <button class="gen-btn" data-gen-action="import-legacy">导入已有产物</button>
+      <span class="gen-status" data-gen-status></span>
+    </div>`;
+  }
+  if (!detail.locked) {
+    return `<div class="gen-panel">
+      <span class="hint">草稿还没锁定，生成之前要先锁定（锁定后不能原地改剧本，
+      要改就得开新 revision）</span>
+      <button class="gen-btn" data-gen-action="prepare">锁定草稿并进入生产</button>
+      <span class="gen-status" data-gen-status></span>
+    </div>`;
+  }
+  return `<div class="gen-panel">
+    <span class="hint">已锁定。${unit}图/动画生成会调用真实的付费接口——点按钮先看预估，看完才确认。
+    成片装配是纯本地 ffmpeg 拼接，不花钱，但要求所有${unit}的首帧/视频 QC 都已通过。
+    每一镜的卡片上也有「只出这一镜」的按钮，适合先出一两个看风格，不用整批生成。</span>
+    ${unconfiguredRolesHtml(['image', 'video'])}
+    <button class="gen-btn spend" data-gen-action="estimate" data-through="frames">${frameLabel}</button>
+    <button class="gen-btn spend" data-gen-action="estimate" data-through="videos">${videoLabel}</button>
+    <button class="gen-btn" data-gen-action="estimate" data-through="final">生成成片（本地拼接，不花钱）</button>
+    <span class="gen-status" data-gen-status></span>
+    ${pipeline === 'storyvideo' ? `<div class="row2" style="margin-top:8px;gap:8px;align-items:center;flex-basis:100%">
+      <span class="hint" style="margin:0">视频出来之后的两步本地处理（不花钱）：</span>
+      <button class="gen-btn" data-local-step="asr" title="用 faster-whisper 逐镜识别语音，跟台词比对；字错率超标的镜自动记重摇">台词识别闸${detail.asr_summary ? `（上次 ✓${detail.asr_summary.pass} ✗${detail.asr_summary.fail}${detail.asr_summary.review ? ' ?' + detail.asr_summary.review : ''}）` : ''}</button>
+      <button class="gen-btn" data-local-step="post" title="旁白 TTS + 整屏插卡 + 画面文字 + 混音，直接从各镜视频合成 <id>_post.mp4">生成后期合成版${detail.has_post_layers ? '' : '（本集没有旁白/插卡，会得到一版只带字幕的成片）'}</button>
+      <span class="gen-status" data-local-status></span>
+    </div>` : ''}
+    <div class="row2" style="margin-top:8px;gap:8px;align-items:center">
+      <span class="hint" style="margin:0">批量 QC（不花钱）：把当前所有「待审」的${unit}一次记为通过；已经点过重摇的不动。</span>
+      <button class="save-btn compact" data-bulk-review="frames">首帧全部通过</button>
+      <button class="save-btn compact" data-bulk-review="videos">视频全部通过</button>
+    </div>
+  </div>`;
+}
+
+function closeModal() {
+  const overlay = document.querySelector('.modal-overlay');
+  if (overlay) overlay.remove();
+}
+
+// 通用的"小确认框"——原生 confirm() 弹窗是浏览器自己的样式，跟整个应用的
+// 深色卡片视觉语言完全不搭，换成同一套
+// .modal-overlay/.modal-box（跟生成预估确认弹窗是同一种视觉语言）。返回
+// Promise<boolean>，调用方 await 一下用法跟原来的 confirm() 基本一样，
+// 只是从同步变成了异步。
+function showConfirmModal(message, { confirmLabel = '确定', cancelLabel = '取消', danger = true } = {}) {
+  return new Promise(resolve => {
+    closeModal();
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal-box" style="width:400px">
+        <p style="white-space:pre-wrap;font-size:13px;line-height:1.6;color:var(--text);margin:0">${escapeHtml(message)}</p>
+        <div class="row2" style="margin-top:18px">
+          <button class="cancel-btn" data-modal-cancel style="margin-left:auto">${escapeHtml(cancelLabel)}</button>
+          <button class="gen-btn${danger ? ' danger' : ''}" data-modal-confirm>${escapeHtml(confirmLabel)}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const finish = (result) => { overlay.remove(); resolve(result); };
+    overlay.querySelector('[data-modal-cancel]').onclick = () => finish(false);
+    overlay.querySelector('[data-modal-confirm]').onclick = () => finish(true);
+  });
+}
+
+// 页面内的输入框弹窗，替代浏览器原生 prompt()——原生 prompt 在桌面版内嵌浏览器里会吞键盘
+// 输入，而且样式跟页面完全脱节。返回 Promise<string|null>：
+// 取消 → null；确定 → 输入的字符串（可能为空，由调用方决定空串是否算数）。
+function showPromptModal(message, { defaultValue = '', placeholder = '', confirmLabel = '确定', cancelLabel = '取消', multiline = true } = {}) {
+  return new Promise(resolve => {
+    closeModal();
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    const field = multiline
+      ? `<textarea data-modal-input rows="3" placeholder="${escapeHtml(placeholder)}" style="width:100%;box-sizing:border-box;margin-top:12px;font:inherit;font-size:13px;line-height:1.5;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--panel2);color:var(--text);resize:vertical">${escapeHtml(defaultValue)}</textarea>`
+      : `<input data-modal-input type="text" value="${escapeHtml(defaultValue)}" placeholder="${escapeHtml(placeholder)}" style="width:100%;box-sizing:border-box;margin-top:12px;font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--panel2);color:var(--text)">`;
+    overlay.innerHTML = `
+      <div class="modal-box" style="width:440px">
+        <p style="white-space:pre-wrap;font-size:13px;line-height:1.6;color:var(--text);margin:0">${escapeHtml(message)}</p>
+        ${field}
+        <div class="row2" style="margin-top:14px">
+          <button class="cancel-btn" data-modal-cancel style="margin-left:auto">${escapeHtml(cancelLabel)}</button>
+          <button class="gen-btn" data-modal-confirm>${escapeHtml(confirmLabel)}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const input = overlay.querySelector('[data-modal-input]');
+    const finish = (result) => { overlay.remove(); resolve(result); };
+    overlay.querySelector('[data-modal-cancel]').onclick = () => finish(null);
+    overlay.querySelector('[data-modal-confirm]').onclick = () => finish(input.value);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') finish(null);
+      // 单行输入回车即确定；多行输入用 Ctrl/Cmd+Enter，普通回车照常换行
+      if (e.key === 'Enter' && (!multiline || e.ctrlKey || e.metaKey)) { e.preventDefault(); finish(input.value); }
+    });
+    setTimeout(() => { input.focus(); if (!multiline) input.select(); }, 0);
+  });
+}
+
+// 页面内的提示弹窗，替代浏览器原生 showNoticeModal()。fire-and-forget 也行，await 也行。
+function showNoticeModal(message, { okLabel = '知道了' } = {}) {
+  return new Promise(resolve => {
+    closeModal();
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal-box" style="width:420px">
+        <p style="white-space:pre-wrap;font-size:13px;line-height:1.6;color:var(--text);margin:0">${escapeHtml(message)}</p>
+        <div class="row2" style="margin-top:16px">
+          <button class="gen-btn" data-modal-confirm style="margin-left:auto">${escapeHtml(okLabel)}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const btn = overlay.querySelector('[data-modal-confirm]');
+    btn.onclick = () => { overlay.remove(); resolve(); };
+    setTimeout(() => btn.focus(), 0);
+  });
+}
+
+function showEstimateModal(through, only, estimate) {
+  closeModal();
+  const isFinal = through === 'final' || through === 'assemble';
+  const throughLabel = isFinal ? '成片装配' : (through === 'frames' ? '首帧' : '视频');
+  const rows = isFinal ? '' : estimate.items.map(i => `
+    <tr>
+      <td>${i.shot_id}</td>
+      <td>${i.in_progress ? '生成中，跳过' : i.already_have ? '已有，跳过' : '<b style="color:var(--warn)">待生成</b>'}</td>
+      <td>${i.model || ''}</td>
+    </tr>`).join('');
+  const upstreamWarn = estimate.missing_upstream_frames.length
+    ? `<p style="color:var(--bad)">⚠ 这些镜次还没有首帧，视频会因此卡住：${estimate.missing_upstream_frames.join(', ')}</p>`
+    : '';
+  const scopeNote = only && only.length
+    ? `<p style="color:var(--dim)">只针对这一镜：<b>${only.join(', ')}</b>，不影响其它镜次。</p>` : '';
+  const costLine = isFinal
+    ? `<p style="color:var(--dim)">成片装配是本地 ffmpeg 拼接，不调用付费接口，不花钱。如果有镜次的 QC 还没通过，
+       这一步会直接失败并说清楚差哪些。</p>`
+    : `<p style="color:var(--dim)">确认后会真实调用付费接口。这是会花钱的操作。</p>`;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h3>确认${throughLabel}${isFinal ? '' : '生成'}</h3>
+      ${scopeNote}
+      ${isFinal ? '' : `<p>本次会发起 <b>${estimate.pending_count}</b> 次${through === 'frames' ? '生图' : '视频生成'}请求，已有产物跳过 <b>${estimate.already_have_count}</b> 个${through === 'videos' && estimate.items.some(i => i.duration) ? `，视频总时长约 <b>${estimate.items.filter(i => !i.already_have && !i.in_progress).reduce((a, i) => a + (i.duration || 0), 0)}s</b>` : ''}。</p>`}
+      ${upstreamWarn}
+      <table><tbody>${rows}</tbody></table>
+      ${costLine}
+      <div class="row2" style="display:flex;">
+        <button class="cancel-btn" data-modal-cancel>取消</button>
+        <button class="gen-btn ${isFinal ? '' : 'danger'}" style="margin-left:8px" data-modal-confirm>
+          ${isFinal ? '确认装配' : '确认生成，开始花钱'}
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('[data-modal-cancel]').onclick = closeModal;
+  overlay.querySelector('[data-modal-confirm]').onclick = () => {
+    closeModal();
+    withProgress(() => confirmGenerate(through, only, estimate.plan_token));
+  };
+}
+
+async function requestGenerate(through, only) {
+  const status = document.querySelector('[data-gen-status]');
+  status.className = 'gen-status';
+  status.textContent = '取预估中…';
+  try {
+    const onlyQuery = only && only.length ? `&only=${only.join(',')}` : '';
+    const estimate = await api(
+      `/api/episodes/${state.current.pipeline}/${state.current.id}/generate-estimate?through=${through}${onlyQuery}`
+    );
+    status.textContent = '';
+    if (estimate.pending_count === 0) {
+      // 用弹窗而不是顶部一行小字：单镜按钮在页面很下面，顶部状态栏根本看不到，会以为按钮没反应
+      const scope = only && only.length ? `这一镜（${only.join(', ')}）` : '这一批';
+      if (through === 'final' || through === 'assemble') {
+        // 成片已经拼好：刷新详情把成片面板渲染出来并滚过去，而不是只说「已有产物」（那样找不到入口）
+        await selectEpisode(state.current.pipeline, state.current.id);
+        const panel = document.getElementById('final-panel');
+        if (panel) { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+        await showNoticeModal('成片已经拼好了，但页面上没找到成片面板——强制刷新一下页面（Ctrl+F5）再看。');
+        return;
+      }
+      if (estimate.in_progress && estimate.in_progress.length) {
+        await showNoticeModal(`${scope}正在生成中（${estimate.in_progress.join(', ')}），不用再点。
+
+等它完成后刷新页面，产物会出现在卡片里再审。`);
+      } else {
+        await showNoticeModal(`${scope}已经有产物，没有新东西要生成。
+
+想重新生成：先在产物下面点「重摇」（记下原因），再点这个按钮。`);
+      }
+      return;
+    }
+    showEstimateModal(through, only, estimate);
+  } catch (e) {
+    status.className = 'gen-status err';
+    status.textContent = '预估失败：' + e.message;
+  }
+}
+
+async function confirmGenerate(through, only, planToken) {
+  const status = document.querySelector('[data-gen-status]');
+  status.className = 'gen-status';
+  status.textContent = '提交中…';
+  try {
+    await api(`/api/episodes/${state.current.pipeline}/${state.current.id}/generate`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ through, only: only && only.length ? only : null, plan_token: planToken, wait: false }),
+    });
+  } catch (e) {
+    status.className = 'gen-status err';
+    status.textContent = '提交失败：' + e.message;
+    return;
+  }
+  await pollGenerate(through, only);
+}
+
+const POLL_INTERVAL_MS = 8000;
+const POLL_MAX_TRIES = 45; // 8s × 45 ≈ 6 分钟，超过这个还没完，交回人手动看
+
+// 长耗时轮询的「停止查看」——不是取消已经提交的付费请求（那笔提交已经发出去，
+// 服务商那边会继续处理，这里拦不住也不该拦），只是让前端不再自动刷新，人可以
+// 先去做别的。「没有计时器、没有取消按钮」的问题按真实能做到的
+// 语义做成"停止查看"而不是"取消生成"，不给一个实际做不到的承诺。
+function makeStopToken() { return { stopped: false }; }
+
+function ensureStopButton(statusEl, stopToken, label) {
+  if (!statusEl) return;
+  let btn = document.getElementById('poll-stop-btn');
+  if (btn) return;
+  btn = document.createElement('button');
+  btn.id = 'poll-stop-btn';
+  btn.className = 'review-btn';
+  btn.type = 'button';
+  btn.style.marginLeft = '8px';
+  btn.textContent = label || '停止查看进度';
+  btn.onclick = () => { stopToken.stopped = true; btn.disabled = true; btn.textContent = '已停止'; };
+  statusEl.insertAdjacentElement('afterend', btn);
+}
+
+function removeStopButton() {
+  document.getElementById('poll-stop-btn')?.remove();
+}
+
+async function pollGenerate(through, only, stopToken) {
+  stopToken = stopToken || makeStopToken();
+  const onlyQuery = only && only.length ? `&only=${only.join(',')}` : '';
+  const startedAt = Date.now();
+  for (let attempt = 1; attempt <= POLL_MAX_TRIES; attempt++) {
+    const status = document.querySelector('[data-gen-status]');
+    if (!status) return; // 用户切走了这个项目，别再更新一个不存在的节点
+    if (stopToken.stopped) {
+      status.className = 'gen-status';
+      status.textContent = '已停止自动刷新——生成仍在后台/服务商那边继续，不影响已经提交的部分；'
+        + '随时可以重新打开这个项目看最新状态。';
+      removeStopButton();
+      return;
+    }
+    ensureStopButton(status, stopToken, '停止自动刷新');
+    const elapsed = Math.round((Date.now() - startedAt) / 1000);
+    status.className = 'gen-status';
+    status.textContent = `处理中，已经 ${elapsed}s（第 ${attempt} 次自动刷新）——可以放心切走这个页面，`
+      + `生成仍在后台/服务商那边继续，回来重新打开这个项目就能看到最新状态。`;
+    await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
+    if (stopToken.stopped) continue; // 下一轮循环开头会处理，不在等待期间再发请求
+    let estimate;
+    try {
+      estimate = await api(
+        `/api/episodes/${state.current.pipeline}/${state.current.id}/generate-estimate?through=${through}${onlyQuery}`
+      );
+    } catch (e) {
+      removeStopButton();
+      status.className = 'gen-status err';
+      status.textContent = '轮询失败：' + e.message;
+      return;
+    }
+    if (estimate.pending_count === 0) {
+      removeStopButton();
+      await selectEpisode(state.current.pipeline, state.current.id);
+      const freshStatus = document.querySelector('[data-gen-status]');
+      if (freshStatus) freshStatus.textContent = '这一批已全部生成完毕。';
+      return;
+    }
+    try {
+      await api(`/api/episodes/${state.current.pipeline}/${state.current.id}/generate`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ through, only: only && only.length ? only : null, plan_token: estimate.plan_token, wait: false }),
+      });
+    } catch (e) {
+      removeStopButton();
+      status.className = 'gen-status err';
+      status.textContent = '轮询提交失败：' + e.message;
+      return;
+    }
+  }
+  removeStopButton();
+  const status = document.querySelector('[data-gen-status]');
+  if (status) status.textContent = '轮询超过 6 分钟还没完——不代表出错，可能是这一批本来就慢，手动刷新这个项目看最新状态。';
+}
+
+function wireReviewHandlers() {
+  document.querySelectorAll('.review-row').forEach(row => {
+    const gate = row.dataset.reviewGate;
+    const shotEl = row.closest('.shot');
+    const shotId = row.dataset.reviewShot || (shotEl && shotEl.dataset.shotId);
+    row.querySelectorAll('.review-btn').forEach(btn => {
+      btn.onclick = async () => {
+        const decision = btn.dataset.reviewDecision;
+        let reason = '';
+        if (decision === 'retake') {
+          reason = (await showPromptModal('重摇原因（必填，写清楚哪里不对，方便以后查）：', { placeholder: '例如：脸漂了 / 尾巴变短 / 出现文字', confirmLabel: '记录并重摇' })) || '';
+          if (!reason.trim()) return; // 用户取消或留空，不发请求
+        }
+        btn.disabled = true;
+        try {
+          await api(`/api/episodes/${state.current.pipeline}/${state.current.id}/review`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gate, decision, shots: [shotId], reason, reviewer: 'webui' }),
+          });
+          await selectEpisode(state.current.pipeline, state.current.id);
+        } catch (e) {
+          showNoticeModal('记录失败：' + e.message);
+          btn.disabled = false;
+        }
+      };
+    });
+  });
+}
+
+function wireGenHandlers() {
+  // 批量 QC：一键把某道闸门下所有「待审」项记为通过（几十张逐张点太慢）。
+  // 只挑 pending 的，已经被人打过重摇/通过的不碰；后端 review 接口本来就支持传镜次列表。
+  document.querySelectorAll('[data-bulk-review]').forEach(btn => {
+    btn.onclick = () => withProgress(async () => {
+      const gate = btn.dataset.bulkReview;
+      // 镜次详情里每镜带 frame_url/video_url（有产物）和 frame_qc_decision/video_qc_decision（人工裁决）
+      const urlKey = gate === 'frames' ? 'frame_url' : 'video_url';
+      const decKey = gate === 'frames' ? 'frame_qc_decision' : 'video_qc_decision';
+      const pending = (state.current.detail?.shots || []).filter(s => s[urlKey] && !s[decKey]).map(s => s.id);
+      const label = gate === 'frames' ? '首帧' : '视频';
+      if (!pending.length) { await showNoticeModal(`没有待审的${label}——要么还没生成，要么都已经裁决过了。`); return; }
+      const ok = await showConfirmModal(`把 ${pending.length} 个待审${label}一次记为「通过」？
+
+${pending.join('、')}
+
+只记裁决，不花钱；之后仍可对单个${label}点重摇。`, { confirmLabel: `全部通过（${pending.length}）`, danger: false });
+      if (!ok) return;
+      const status = document.querySelector('[data-gen-status]');
+      status.className = 'gen-status'; status.textContent = `记录 ${pending.length} 个${label}通过…`;
+      try {
+        await api(`/api/episodes/${state.current.pipeline}/${state.current.id}/review`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gate, decision: 'pass', shots: pending, reason: '批量通过（webui）', reviewer: 'webui' }),
+        });
+        await selectEpisode(state.current.pipeline, state.current.id);
+      } catch (e) {
+        status.className = 'gen-status err'; status.textContent = `批量通过失败：${e.message}`;
+      }
+    });
+  });
+  const prepareBtn = document.querySelector('[data-gen-action="prepare"]');
+  if (prepareBtn) {
+    prepareBtn.onclick = () => withProgress(async () => {
+      const status = document.querySelector('[data-gen-status]');
+      status.textContent = '锁定中…';
+      try {
+        await api(`/api/episodes/${state.current.pipeline}/${state.current.id}/prepare`, { method: 'POST' });
+        await selectEpisode(state.current.pipeline, state.current.id);
+      } catch (e) {
+        status.className = 'gen-status err';
+        status.textContent = '锁定失败：' + e.message;
+      }
+    });
+  }
+  const importBtn = document.querySelector('[data-gen-action="import-legacy"]');
+  if (importBtn) {
+    importBtn.onclick = () => withProgress(async () => {
+      const status = document.querySelector('[data-gen-status]');
+      status.textContent = '导入中…';
+      try {
+        await api(`/api/episodes/${state.current.pipeline}/${state.current.id}/import-legacy`, { method: 'POST' });
+        await selectEpisode(state.current.pipeline, state.current.id);
+      } catch (e) {
+        status.className = 'gen-status err';
+        status.textContent = '导入失败：' + e.message;
+      }
+    });
+  }
+  document.querySelectorAll('[data-gen-action="estimate"]').forEach(btn => {
+    btn.onclick = () => withProgress(() => requestGenerate(btn.dataset.through, null));
+  });
+  document.querySelectorAll('[data-shot-gen]').forEach(btn => {
+    btn.onclick = () => withProgress(() => requestGenerate(btn.dataset.shotGen, [btn.dataset.shotId]));
+  });
+}
+
+// ---- 本地长任务（台词识别闸 / 后期合成）：提交即返回 task_id，后台跑，这里轮询。
+const TASK_POLL_MS = 2500;
+async function pollTask(taskId, onTick) {
+  const startedAt = Date.now();
+  while (true) {
+    const task = await api(`/api/tasks/${taskId}`);
+    if (onTick) onTick(task, Math.round((Date.now() - startedAt) / 1000));
+    if (task.status === 'succeeded' || task.status === 'failed') return task;
+    await new Promise(r => setTimeout(r, TASK_POLL_MS));
+  }
+}
+
+function wireLocalStepHandlers() {
+  document.querySelectorAll('[data-local-step]').forEach(btn => {
+    btn.onclick = () => withProgress(async () => {
+      const step = btn.dataset.localStep;
+      const status = document.querySelector('[data-local-status]');
+      const { pipeline, id } = state.current;
+      let payload = null;
+      if (step === 'asr') {
+        const ok = await showConfirmModal(
+          `台词识别闸：用本机的 faster-whisper 逐镜识别语音，跟台词比对。\n\n` +
+          `字错率 ≤0.3 通过，≤0.45 待复核，其余自动记「重摇」（等你重出视频后再审）。\n` +
+          `第一次运行要下载识别模型（约 500MB），之后每镜几秒到几十秒。不花钱。`,
+          { confirmLabel: '开始识别', danger: false });
+        if (!ok) return;
+        payload = { record_retakes: !!state.current.detail.locked, include_stray: false };
+      } else {
+        const ok = await showConfirmModal(
+          `生成后期合成版：旁白 TTS + 整屏插卡 + 画面文字 + 字幕 + 混音，直接从各镜视频合成 ${id}_post.mp4。\n\n` +
+          `要求所有镜次都已出视频。旁白用「模型设置」里的语音模型（没配就用免费的 Edge TTS）。本地 ffmpeg，不花钱。`,
+          { confirmLabel: '开始合成', danger: false });
+        if (!ok) return;
+      }
+      status.className = 'gen-status'; status.textContent = '提交中…';
+      btn.disabled = true;
+      let created;
+      try {
+        created = await api(`/api/episodes/${pipeline}/${id}/${step === 'asr' ? 'asr-qc' : 'post'}`,
+          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload ? JSON.stringify(payload) : '{}' });
+      } catch (e) {
+        status.className = 'gen-status err'; status.textContent = e.message; btn.disabled = false; return;
+      }
+      let task;
+      try {
+        task = await pollTask(created.task_id, (t, elapsed) => {
+          const s = document.querySelector('[data-local-status]');
+          if (s) s.textContent = `${step === 'asr' ? '识别中' : '合成中'}…已经 ${elapsed}s（可以切走，回来重新打开项目看结果）`;
+        });
+      } catch (e) {
+        status.className = 'gen-status err'; status.textContent = '轮询失败：' + e.message; btn.disabled = false; return;
+      }
+      if (task.status === 'failed') {
+        await showNoticeModal(`${step === 'asr' ? '台词识别' : '后期合成'}失败：\n\n${task.error}`);
+        await selectEpisode(pipeline, id);
+        return;
+      }
+      if (step === 'asr') {
+        const r = task.result;
+        const lines = [`通过 ${r.summary.pass} · 待复核 ${r.summary.review || 0} · 不符 ${r.summary.fail} · 无台词镜有语音 ${r.summary.stray} · 无视频 ${r.summary.missing_video}`];
+        if (r.recorded_retakes.length) lines.push(`已自动记重摇：${r.recorded_retakes.join('、')}——重出这些镜的视频后再审。`);
+        if (r.record_errors.length) lines.push(`记重摇失败：${r.record_errors.join('；')}`);
+        await showNoticeModal('台词识别闸完成\n\n' + lines.join('\n'));
+      }
+      await selectEpisode(pipeline, id);
+      if (step === 'post') {
+        const panel = document.getElementById('final-panel');
+        if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+}
+
+// ---- 后期层面板：旁白（声线 + 逐句）、整屏插卡、画面文字。未冻结直接写；已冻结走 amend（后端保证只改后期块）。
+async function renderPostLayersPanel(episodeId) {
+  const container = document.getElementById('post-layers-panel');
+  if (!container) return;
+  let doc;
+  try {
+    doc = await api(`/api/episodes/storyvideo/${episodeId}/post-layers`);
+  } catch (e) {
+    container.innerHTML = `<div class="readonly-note">后期层读取失败：${escapeHtml(e.message)}</div>`;
+    return;
+  }
+  state.postLayers = doc;
+  const vo = doc.voice_over || {};
+  const pg = doc.post_graphics || {};
+  const voLines = Array.isArray(vo.lines) ? vo.lines : [];
+  const inserts = Array.isArray(pg.phone_ui_inserts) ? pg.phone_ui_inserts : [];
+  const notes = Array.isArray(pg.notebook_text) ? pg.notebook_text : [];
+  const r = doc.readiness || {};
+  const readyBits = [
+    r.ffmpeg_ok ? '✓ ffmpeg' : '✗ ffmpeg 未找到',
+    r.fonts_ok ? '✓ 中文字体' : `✗ 缺字体（${(r.fonts_missing || []).join('、')}）`,
+    r.missing_videos && r.missing_videos.length ? `✗ 还差 ${r.missing_videos.length}/${r.videos_total} 镜视频` : `✓ ${r.videos_total} 镜视频齐了`,
+    r.asr_available ? '✓ 台词识别可用' : '· 台词识别未安装（可选）',
+  ];
+  const lockNote = doc.locked
+    ? '<span class="hint" style="margin:0">已冻结的项目仍可改这三块：保存即修订（amend），不会重新生成任何镜次；已合成过的后期版会作废，改完再点一次「生成后期合成版」。</span>'
+    : '';
+  const rowBtns = (kind, idx) => `<td style="white-space:nowrap"><button class="review-btn" data-pl-edit="${kind}" data-pl-idx="${idx}">改</button>
+    <button class="review-btn retake" data-pl-del="${kind}" data-pl-idx="${idx}">删</button></td>`;
+  const voRows = voLines.map((l, i) => `<tr><td class="who">${escapeHtml(String(l.shot ?? ''))}</td><td class="win">@${Number(l.at || 0).toFixed(1)}s</td><td>${escapeHtml(l.zh || '')}</td>${rowBtns('vo', i)}</tr>`).join('');
+  const insRows = inserts.map((x, i) => `<tr><td class="who">${escapeHtml(String(x.id ?? ''))}</td><td class="win">${escapeHtml(String(x.after ?? ''))} 之后 · ${Number(x.dur || 4)}s</td><td>${escapeHtml(x.layout || 'plain')} · ${escapeHtml(x.title || x.app || x.sender || (x.lines || []).join(' / ') || x.screen || '')}</td>${rowBtns('ins', i)}</tr>`).join('');
+  const noteRows = notes.map((n, i) => `<tr><td class="who">${escapeHtml(String(n.shot ?? ''))}</td><td class="win">@${Number(n.at || 0.4).toFixed(1)}s</td><td>${escapeHtml(n.text || '')}</td>${rowBtns('note', i)}</tr>`).join('');
+  const edge = vo.edge || {};
+  const postInfo = doc.post && doc.post.output_exists
+    ? `<span class="hint" style="margin:0">上次后期合成：${Number(doc.post.duration_seconds || 0).toFixed(1)}s，旁白 ${(doc.post.vo || []).length} 句，插卡 ${(doc.post.ui_inserts || []).length} 张。</span>`
+    : '';
+  container.innerHTML = `<details class="fold" ${voLines.length || inserts.length || notes.length ? 'open' : ''}>
+    <summary>后期层：旁白 ${voLines.length} 句 · 插卡 ${inserts.length} 张 · 画面文字 ${notes.length} 条（展开编辑）</summary>
+    <div class="shot" style="margin-top:8px">
+      <div class="hint" style="font-size:12px">${readyBits.join('　')}</div>
+      ${lockNote}${postInfo}
+      <div class="row2" style="margin-top:10px;align-items:center">
+        <span class="sid">旁白</span>
+        <span class="save-status">声线：${escapeHtml(edge.voice || '（跟随模型设置的语音角色）')}${edge.rate ? ' · 语速 ' + escapeHtml(edge.rate) : ''}${edge.pitch ? ' · 音调 ' + escapeHtml(edge.pitch) : ''}</span>
+        <button class="review-btn" data-pl-edit="edge">改声线</button>
+        <button class="gen-btn" data-pl-add="vo" style="margin-left:auto">+ 加一句旁白</button>
+      </div>
+      <table class="lines"><tbody>${voRows || '<tr><td colspan="4" style="color:var(--dim)">（没有旁白）</td></tr>'}</tbody></table>
+      <div class="row2" style="margin-top:14px;align-items:center">
+        <span class="sid">整屏插卡</span>
+        <span class="hint" style="margin:0">手机通知 / 短信 / 商品页样式的整屏画面，插在某一镜之后</span>
+        <button class="gen-btn" data-pl-add="ins" style="margin-left:auto">+ 加一张插卡</button>
+      </div>
+      <table class="lines"><tbody>${insRows || '<tr><td colspan="4" style="color:var(--dim)">（没有插卡）</td></tr>'}</tbody></table>
+      <div class="row2" style="margin-top:14px;align-items:center">
+        <span class="sid">画面文字</span>
+        <span class="hint" style="margin:0">叠在某一镜画面上的手写风文字（本子字）</span>
+        <button class="gen-btn" data-pl-add="note" style="margin-left:auto">+ 加一条</button>
+      </div>
+      <table class="lines"><tbody>${noteRows || '<tr><td colspan="4" style="color:var(--dim)">（没有画面文字）</td></tr>'}</tbody></table>
+      <div class="row2" style="margin-top:8px"><span class="save-status" id="pl-status"></span></div>
+    </div>
+  </details>`;
+  wirePostLayersHandlers(episodeId);
+}
+
+const POST_LAYER_TEMPLATES = {
+  vo: { shot: '', at: 0.5, zh: '' },
+  ins: { id: 'UI_1', after: '', dur: 3, layout: 'notification', app: '', title: '通知', time: '09:00', items: ['第一行', '第二行'] },
+  note: { shot: '', at: 0.4, text: '', y: 0.56 },
+  edge: { voice: 'zh-CN-YunxiNeural', rate: '-4%', pitch: '-6Hz' },
+};
+
+async function savePostLayers(episodeId, patch, status) {
+  status.className = 'save-status'; status.textContent = '保存中…';
+  try {
+    const result = await api(`/api/episodes/storyvideo/${episodeId}/post-layers`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch),
+    });
+    closeModal();
+    await renderPostLayersPanel(episodeId);
+    const fresh = document.getElementById('pl-status');
+    if (fresh) {
+      fresh.className = 'save-status ok';
+      fresh.textContent = result.status === 'amended' ? '已保存并修订冻结快照（amend）' : result.status === 'unchanged' ? '没有变化' : '已保存';
+    }
+    // 后期块变了 → 项目详情里的 has_post_layers / final_kind 可能变，顺手刷新头部面板但不重画整页
+    return true;
+  } catch (e) {
+    status.className = 'save-status err'; status.textContent = '保存失败：' + e.message;
+    return false;
+  }
+}
+
+function wirePostLayersHandlers(episodeId) {
+  const doc = state.postLayers;
+  const vo = JSON.parse(JSON.stringify(doc.voice_over || {}));
+  const pg = JSON.parse(JSON.stringify(doc.post_graphics || {}));
+  const lists = {
+    vo: () => (vo.lines = Array.isArray(vo.lines) ? vo.lines : []),
+    ins: () => (pg.phone_ui_inserts = Array.isArray(pg.phone_ui_inserts) ? pg.phone_ui_inserts : []),
+    note: () => (pg.notebook_text = Array.isArray(pg.notebook_text) ? pg.notebook_text : []),
+  };
+  const patchFor = (kind) => kind === 'vo' || kind === 'edge' ? { voice_over: vo } : { post_graphics: pg };
+  const labels = { vo: '旁白句', ins: '插卡', note: '画面文字', edge: '旁白声线' };
+  const shotHint = `<p class="hint" style="margin:0 0 6px">本集镜号：${(doc.shot_ids || []).map(escapeHtml).join('、')}</p>`;
+  const openEditor = (kind, idx) => {
+    const isEdge = kind === 'edge';
+    const list = isEdge ? null : lists[kind]();
+    const existing = isEdge ? (vo.edge || null) : (idx != null ? list[idx] : null);
+    const template = { ...POST_LAYER_TEMPLATES[kind] };
+    if (!isEdge && idx == null && doc.shot_ids && doc.shot_ids.length) {
+      if (kind === 'ins') { template.after = doc.shot_ids[0]; template.id = `UI_${list.length + 1}`; }
+      else template.shot = doc.shot_ids[0];
+    }
+    showItemJsonModal(existing ? `编辑${labels[kind]}` : `新增${labels[kind]}`, existing || template, async (edited, status) => {
+      if (isEdge) vo.edge = edited;
+      else if (idx != null) list[idx] = edited;
+      else list.push(edited);
+      const ok = await savePostLayers(episodeId, patchFor(kind), status);
+      if (!ok) { // 回滚内存里的改动，别留一个跟磁盘不一致的假象
+        if (isEdge) vo.edge = existing; else if (idx != null) list[idx] = existing; else list.pop();
+      }
+    }, isEdge ? '' : shotHint);
+  };
+  document.querySelectorAll('[data-pl-edit]').forEach(btn => {
+    btn.onclick = () => openEditor(btn.dataset.plEdit, btn.dataset.plIdx != null ? Number(btn.dataset.plIdx) : null);
+  });
+  document.querySelectorAll('[data-pl-add]').forEach(btn => { btn.onclick = () => openEditor(btn.dataset.plAdd, null); });
+  document.querySelectorAll('[data-pl-del]').forEach(btn => {
+    btn.onclick = async () => {
+      const kind = btn.dataset.plDel, idx = Number(btn.dataset.plIdx);
+      const list = lists[kind]();
+      const sure = await showConfirmModal(`删除这条${labels[kind]}？`, { confirmLabel: '删除' });
+      if (!sure) return;
+      const backup = list.splice(idx, 1);
+      const status = document.getElementById('pl-status');
+      const ok = await savePostLayers(episodeId, patchFor(kind), status);
+      if (!ok) list.splice(idx, 0, ...backup);
+    };
+  });
+}
+
+function qcBadge(decision) {
+  const cls = decision === 'pass' ? 'pass' : decision === 'waive' ? 'waive'
+    : decision === 'retake' ? 'retake' : 'none';
+  const label = { pass: '已通过', waive: '已豁免', retake: '待重摇' }[decision] || '待审';
+  return `<span class="qc-badge ${cls}">${label}</span>`;
+}
+
+function reviewRow(shot, gate, hasArtifact) {
+  if (!hasArtifact) return '';
+  const decision = gate === 'frames' ? shot.frame_qc_decision : shot.video_qc_decision;
+  if (decision === 'retake') {
+    // 已经记了重摇：这一步的任务已被重置为「待重出」，再点重摇后端会拒（cannot retake while its
+    // state is prepared）。这里直接告诉人下一步是什么，不再摆一个会报错的按钮。
+    const unit = gate === 'frames' ? '首帧' : '视频';
+    return `<div class="review-row" data-review-gate="${gate}">
+      <span class="hint" style="margin:0;color:var(--chop)">已记重摇，等待重出 → 点上方「只出这镜${unit}」重新生成；重出后再审</span>
+    </div>`;
+  }
+  return `<div class="review-row" data-review-gate="${gate}">
+    <button class="review-btn pass" data-review-decision="pass">通过</button>
+    <button class="review-btn retake" data-review-decision="retake">重摇</button>
+  </div>`;
+}
+
+// 台词识别闸的逐镜结果：挂在视频下面一行。状态词汇跟 CLI 一致（pass/review/fail/silent/stray/no_lines）。
+function asrLine(shot) {
+  const a = shot.asr;
+  if (!a) return '';
+  const mark = { pass: '✓', review: '?', fail: '✗', silent: '✗', stray: '△', no_lines: '·', missing_video: '-' }[a.status] || '·';
+  const label = { pass: '识别通过', review: '待复核', fail: '识别不符', silent: '没识别到语音', stray: '无台词镜里有语音', no_lines: '无台词', missing_video: '无视频' }[a.status] || a.status;
+  const color = a.status === 'pass' || a.status === 'no_lines' ? 'var(--good)' : a.status === 'review' ? 'var(--warn)' : 'var(--bad)';
+  const cer = typeof a.cer === 'number' ? ` · 字错率 ${a.cer}` : '';
+  const heard = a.heard ? ` · 听到「${escapeHtml(a.heard)}」` : '';
+  return `<div class="save-status" style="margin-top:4px;color:${color}" title="期望「${escapeHtml(a.expected || '')}」">${mark} ${label}${cer}${heard}</div>`;
+}
+
+function renderMediaRow(shot) {
+  if (!shot.frame_url && !shot.video_url) return '';
+  const frameCell = shot.frame_url ? `
+    <div class="media-cell">
+      <div class="cap"><span>首帧</span>${qcBadge(shot.frame_qc_decision)}</div>
+      <img src="${shot.frame_url}" />
+      ${reviewRow(shot, 'frames', true)}
+    </div>` : '';
+  const videoCell = shot.video_url ? `
+    <div class="media-cell">
+      <div class="cap"><span>视频</span>${qcBadge(shot.video_qc_decision)}</div>
+      <video src="${shot.video_url}" controls preload="metadata"></video>
+      ${asrLine(shot)}
+      ${reviewRow(shot, 'videos', true)}
+    </div>` : '';
+  return `<div class="media-row">${frameCell}${videoCell}</div>`;
+}
+
+// 统一渲染函数：已保存项目的逐镜编辑和还没保存的草稿逐镜编辑长得一样、
+// 编辑手感一样——区别只在于"保存这一镜"点下去调的是哪个
+// 端点，那部分交给调用方通过 wireShotHandlers 的 onSave 回调决定，这里不关心。
+// opts: { editable, showGenRow }——showGenRow 单独一个开关而不是复用 editable，
+// 是因为"能不能改文字"和"能不能花钱单出这一镜"是两件独立的事：已锁定项目
+// editable=false 但 showGenRow 可能是 true，未锁定草稿反过来。
+function renderShot(shot, opts) {
+  const { editable, showGenRow, extraActionsHtml: extraActions } = opts || {};
+  const b = shot.budget;
+  const bcls = budgetClass(b);
+  const budgetHtml = b
+    ? `<span class="budget ${bcls}">台词 ${b.dialogue_chars} 字 ≈${b.speech_seconds}s / 声明 ${b.declared_dur}s</span>`
+    : '';
+  const linesRows = shot.lines.map((l, i) => `
+    <tr data-idx="${i}">
+      <td class="who">${l.who}</td>
+      <td class="win">${l.subtitle_start_seconds != null ? l.subtitle_start_seconds.toFixed(1) + '–' + l.subtitle_end_seconds.toFixed(1) + 's' : ''}</td>
+      <td><textarea ${editable ? '' : 'readonly'} data-field="zh">${escapeHtml(l.zh)}</textarea>
+        <textarea ${editable ? '' : 'readonly'} data-field="tone" rows="1" placeholder="语气 / 音量 / 语速 / 状态（例：压低声音，带点不耐烦，语速偏快）" style="margin-top:4px;font-size:11.5px;color:var(--dim)">${escapeHtml(l.tone || '')}</textarea></td>
+    </tr>`).join('');
+
+  let cameraControl = '';
+  if (editable && state.cameraOptions) {
+    const opts2 = state.cameraOptions.shots.map(s =>
+      `<option value="${s.id}" ${shot.camera_move === s.id ? 'selected' : ''}>${s.cn}（${s.risk}）</option>`
+    ).join('');
+    cameraControl = `
+      <select data-field="camera_move">
+        <option value="">（不声明运镜）</option>
+        ${opts2}
+      </select>`;
+  } else if (shot.camera_move) {
+    cameraControl = `<span class="save-status">运镜：${shot.camera_move}</span>`;
+  }
+
+  const saveRow = editable ? `
+    <div class="row2">
+      ${cameraControl}
+      <button class="save-btn compact" data-action="save">保存这一镜</button>
+      <span class="save-status"></span>
+    </div>` : (cameraControl ? `<div class="row2">${cameraControl}</div>` : '');
+
+  // 「风格试跑」：先出一两镜看风格，不用整批生成——后端 generate-estimate/generate
+  // 本来就支持 only 参数，这里只是把它暴露成每一镜的小按钮。只有锁定后（能生成的
+  // 状态）才显示，草稿阶段还没到能调付费接口的时候，调用方不传就是不显示。
+  const shotGenRow = showGenRow ? `<div class="row2">
+        <button class="gen-btn spend" data-shot-gen="frames" data-shot-id="${shot.id}">只出这镜首帧</button>
+        <button class="gen-btn spend" data-shot-gen="videos" data-shot-id="${shot.id}">只出这镜视频</button>
+      </div>` : '';
+
+  // shot_error 只有草稿态的 _draft_shot_view 会给（某一镜编译失败，比如运镜
+  // 不合法）——已保存项目走的是 shot_detail，正常不会有这个字段，两边共用
+  // 同一份渲染，加个判断就够了，不用拆两份模板。
+  const errorHtml = shot.shot_error
+    ? `<div class="warnings" style="margin:8px 0 0">⚠ 这一镜没通过校验：${escapeHtml(shot.shot_error)}</div>`
+    : '';
+
+  return `
+  <div class="shot" id="shot-${shot.id}" data-shot-id="${shot.id}">
+    <div class="shot-top">
+      <div>
+        <span class="sid">${shot.id}</span>
+        <div class="shot-meta">cast: ${(shot.cast || []).join(', ') || '（无）'} · ref_frame: ${shot.ref_frame || '（独立首帧）'}${shot.dur != null ? ` · dur: ${shot.dur}s` : ''}</div>
+      </div>
+      ${budgetHtml}
+    </div>
+    ${shotGenRow}
+    ${renderMediaRow(shot)}
+    <table class="lines"><tbody>${linesRows || '<tr><td colspan="3" style="color:var(--dim)">（本镜无台词）</td></tr>'}</tbody></table>
+    ${saveRow}
+    ${extraActions || ''}
+    ${errorHtml}
+    <details>
+      <summary>首帧提示词</summary>
+      <pre>${escapeHtml(shot.frame_prompt)}</pre>
+    </details>
+    <details>
+      <summary>负向提示词</summary>
+      <pre>${escapeHtml(shot.neg_prompt)}</pre>
+    </details>
+    <details>
+      <summary>视频提示词</summary>
+      <pre>${escapeHtml(shot.video_prompt)}</pre>
+    </details>
+  </div>`;
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// 通用逐镜「保存」接线——已保存项目和还没保存的草稿共用同一套 DOM 读取/
+// payload 拼装逻辑，只有"保存之后调哪个接口、拿到结果怎么
+// 更新页面"这部分因为草稿态没有磁盘文件、没有 episode_id 而不同，所以拆成
+// 一个 onSave(shotId, payload, status) 回调，由调用方决定。
+// getOriginalShot(shotId) 用于取"没被编辑过的原始行"（who/timing 这些字段
+// 界面上不给改，要从原始数据里带过去，不能凭编辑框内容瞎猜）。
+function wireShotHandlers(getOriginalShot, onSave) {
+  document.querySelectorAll('.shot').forEach(shotEl => {
+    const shotId = shotEl.dataset.shotId;
+    const btn = shotEl.querySelector('[data-action="save"]');
+    if (!btn) return;
+    btn.onclick = async () => {
+      const status = shotEl.querySelector('.save-status');
+      status.className = 'save-status';
+      status.textContent = '保存中…';
+      const original = getOriginalShot(shotId);
+      // [data-idx] 排除「本镜无台词」的占位行——那一行是纯展示，没有对应的
+      // lines[] 下标，真人点这个镜次的保存按钮时崩过一次，就是漏了这个过滤。
+      const lines = [...shotEl.querySelectorAll('table.lines tr[data-idx]')].map(tr => {
+        const idx = Number(tr.dataset.idx);
+        const originalLine = original.lines[idx];
+        return {
+          who: originalLine.who,
+          zh: tr.querySelector('textarea[data-field="zh"]').value,
+          tone: tr.querySelector('textarea[data-field="tone"]')?.value ?? '',
+          subtitle_start_seconds: originalLine.subtitle_start_seconds,
+          subtitle_end_seconds: originalLine.subtitle_end_seconds,
+        };
+      });
+      const cameraSelect = shotEl.querySelector('select[data-field="camera_move"]');
+      const payload = { lines };
+      if (cameraSelect) payload.camera_move = cameraSelect.value || null;
+      try {
+        await onSave(shotId, payload, status, shotEl);
+      } catch (e) {
+        status.className = 'save-status err';
+        status.textContent = '保存失败：' + e.message;
+      }
+    };
+  });
+}
+
+// 已保存项目的逐镜保存：PUT 到真实的项目文件端点。
+async function saveEpisodeShot(shotId, payload, status) {
+  const result = await api(
+    `/api/episodes/${state.current.pipeline}/${state.current.id}/shots/${shotId}`,
+    { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+  );
+  // renderEpisode() 重建整页 DOM，先设置状态文字再重渲染等于白设置——
+  // 真人点击测出来的：成功提示 0 毫秒就被冲掉了，用户根本看不到。
+  // 重渲染之后再到新 DOM 里找那个镜次的状态位，把提示补上。
+  const idx = state.current.detail.shots.findIndex(s => s.id === shotId);
+  state.current.detail.shots[idx] = result.shot;
+  state.current.detail.warnings = result.warnings;
+  renderEpisode();
+  const freshStatus = document.querySelector(`.shot[data-shot-id="${shotId}"] .save-status`);
+  if (freshStatus) { freshStatus.className = 'save-status ok'; freshStatus.textContent = '已保存'; }
+}
+
+// 还没保存的草稿的逐镜保存：POST 到 /api/scripts/draft/shot，不花钱、不落盘，
+// 纯内存里的 spec 合并+重新校验+重新编译预览。
+//
+// 基准 spec 从 #draft-json 编辑框的当前内容现读，不是 resp.spec 闭包里的
+// 旧值——这份 JSON 编辑框仍然是"兜底"的结构性编辑入口（加/删镜次这类），
+// 人可能刚在里面手改过、还没点"保存为新项目"；如果这里用闭包里的旧 resp.spec
+// 去发请求，等结果回来重新渲染，会把 textarea 里那些还没提交的手改内容
+// 悄悄冲掉——这跟 regenerateDraftShot 一直以来"从 #draft-json 现读"是
+// 同一个信任模型，不能这里单独抄一份旧状态。
+async function saveDraftShot(episodeId, resp, shotId, payload, status) {
+  let currentSpec;
+  try {
+    currentSpec = JSON.parse(document.getElementById('draft-json').value);
+  } catch (e) {
+    throw new Error('下面的 JSON 编辑框内容格式不对，先修好再保存这一镜：' + e.message);
+  }
+  const result = await api('/api/scripts/draft/shot', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ spec: currentSpec, shot_id: shotId, ...payload }),
+  });
+  resp.spec = result.spec;
+  resp.warnings = result.warnings;
+  resp.shots = result.shots;
+  renderDraftPreview(episodeId, resp);
+  const freshStatus = document.querySelector(`.shot[data-shot-id="${shotId}"] .save-status`);
+  if (freshStatus) { freshStatus.className = 'save-status ok'; freshStatus.textContent = '已保存'; }
+}
+
+// 「基础配置」管理页：镜头语言库/风格骨架库这两份所有项目共用的库，之前只能
+// 靠改 Python 脚本再重跑才能加一个新 profile——现在能在这里逐条增删改，存盘
+// 立刻生效（后端清缓存，不用重启服务）。编辑/新增一条只弹出那一条的小 JSON
+// （几行到几十行），不是把几万字符的整份文档甩给人从头翻——那是上一版的
+// 真实教训：技术上算"能编辑"，实际没法用。整份 JSON 编辑框还留着一个兜底
+// 入口，给还没做成逐条表单的部分（风格骨架/检查清单）用，不是主路径。
+async function showConfigPage() {
+  document.querySelectorAll('aside .item.active').forEach(el => el.classList.remove('active'));
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="empty">加载配置…</div>';
+  try {
+    const [cam, style] = await Promise.all([
+      api('/api/config/camera-library'),
+      api('/api/config/style-library'),
+    ]);
+    state.configCam = cam;
+    state.configStyle = style;
+  } catch (e) {
+    main.innerHTML = `<div class="empty">加载配置失败：${e.message}</div>`;
+    return;
+  }
+  renderConfigPage();
+}
+
+// 单条记录的小编辑弹窗——复用 .modal-overlay/.modal-box，宽一点、textarea 矮一点，
+// 因为装的是"一条镜头/一条负向词"这种量级，不是整份文档。
+function showItemJsonModal(title, itemObj, onSave, extraFieldsHtml) {
+  closeModal();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box" style="width:620px">
+      <h3>${escapeHtml(title)}</h3>
+      ${extraFieldsHtml || ''}
+      <textarea class="draft-json" id="item-json-editor" style="min-height:240px">${escapeHtml(JSON.stringify(itemObj, null, 2))}</textarea>
+      <div class="row2" style="align-items:center">
+        <span class="save-status" id="item-json-status"></span>
+        <button class="cancel-btn" data-modal-cancel style="margin-left:auto">取消</button>
+        <button class="save-btn" data-modal-save>保存</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('[data-modal-cancel]').onclick = closeModal;
+  overlay.querySelector('[data-modal-save]').onclick = () => withProgress(async () => {
+    const status = document.getElementById('item-json-status');
+    status.className = 'save-status';
+    let parsed;
+    try {
+      parsed = JSON.parse(document.getElementById('item-json-editor').value);
+    } catch (e) {
+      status.className = 'save-status err';
+      status.textContent = 'JSON 格式不对：' + e.message;
+      return;
+    }
+    await onSave(parsed, status);
+  });
+}
+
+// 「带 id 的对象数组」通用增删改——镜头/组合内/镜头组/负向词池这四个集合结构
+// 完全一样（数组，每条记录有 id 字段），一套函数管四个，不用分别写四遍。
+function editArrayItem({ doc, apiPath, collectionKey, itemId, template, itemLabel, onSaved }) {
+  const list = doc[collectionKey] || (doc[collectionKey] = []);
+  const existing = itemId ? list.find(x => x.id === itemId) : null;
+  const title = existing ? `编辑${itemLabel}：${itemId}` : `新增${itemLabel}`;
+  showItemJsonModal(title, existing || template, async (edited, status) => {
+    if (!edited.id) { status.className = 'save-status err'; status.textContent = 'id 字段必填'; return; }
+    if (!existing && list.some(x => x.id === edited.id)) {
+      status.className = 'save-status err'; status.textContent = `id ${edited.id} 已经存在`; return;
+    }
+    const idx = list.findIndex(x => x.id === (existing ? itemId : edited.id));
+    if (existing && idx === -1) {
+      status.className = 'save-status err'; status.textContent = '原记录找不到了，刷新页面重试'; return;
+    }
+    status.textContent = '保存中…';
+    const backup = [...list];
+    if (existing) list[idx] = edited; else list.push(edited);
+    try {
+      await api(apiPath, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: doc }) });
+    } catch (e) {
+      doc[collectionKey] = backup; // 存失败，回滚内存里的临时改动，不留一个跟服务端不一致的假象
+      status.className = 'save-status err'; status.textContent = '保存失败：' + e.message;
+      return;
+    }
+    closeModal();
+    if (onSaved) onSaved();
+  });
+}
+
+async function deleteArrayItem({ doc, apiPath, collectionKey, itemId, itemLabel, onSaved }) {
+  const sure = await showConfirmModal(`确定删除${itemLabel}「${itemId}」？如果有 profile 还在引用它，保存时会被拒绝。`);
+  if (!sure) return;
+  await withProgress(async () => {
+    const list = doc[collectionKey] || [];
+    const backup = [...list];
+    doc[collectionKey] = list.filter(x => x.id !== itemId);
+    try {
+      await api(apiPath, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: doc }) });
+    } catch (e) {
+      doc[collectionKey] = backup;
+      showNoticeModal('删除失败：' + e.message);
+      return;
+    }
+    if (onSaved) onSaved();
+  });
+}
+
+// profiles 是「按名字做 key 的字典」，名字本身不是记录里的字段，新增时要多问
+// 一句名字叫什么——跟数组集合的形状不一样，所以是单独一套函数，不硬塞进上面
+// 那套里。
+function editProfile({ doc, apiPath, profileName, template, onSaved }) {
+  const profiles = doc.profiles || (doc.profiles = {});
+  const existing = profileName ? profiles[profileName] : null;
+  const title = existing ? `编辑 profile：${profileName}` : '新增 profile';
+  const nameFieldHtml = existing ? '' : `
+    <div class="field-row"><label>profile 名称（英文 slug，比如 night_market_duo）</label>
+      <input type="text" id="new-profile-name" /></div>`;
+  showItemJsonModal(title, existing || template, async (edited, status) => {
+    let name = profileName;
+    if (!existing) {
+      name = document.getElementById('new-profile-name')?.value.trim();
+      if (!name) { status.className = 'save-status err'; status.textContent = 'profile 名称必填'; return; }
+      if (profiles[name]) { status.className = 'save-status err'; status.textContent = `profile ${name} 已经存在`; return; }
+    }
+    status.textContent = '保存中…';
+    const backup = { ...profiles };
+    profiles[name] = edited;
+    try {
+      await api(apiPath, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: doc }) });
+    } catch (e) {
+      doc.profiles = backup;
+      status.className = 'save-status err'; status.textContent = '保存失败：' + e.message;
+      return;
+    }
+    closeModal();
+    if (onSaved) onSaved();
+  }, nameFieldHtml);
+}
+
+async function deleteProfile({ doc, apiPath, profileName, onSaved }) {
+  const sure = await showConfirmModal(`确定删除 profile「${profileName}」？`);
+  if (!sure) return;
+  await withProgress(async () => {
+    const backup = { ...doc.profiles };
+    delete doc.profiles[profileName];
+    try {
+      await api(apiPath, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: doc }) });
+    } catch (e) {
+      doc.profiles = backup;
+      showNoticeModal('删除失败：' + e.message);
+      return;
+    }
+    if (onSaved) onSaved();
+  });
+}
+
+const CONFIG_TEMPLATES = {
+  shot: { id: '', cn: '', cat: 'motion', risk_source: 'inferred', prompt_cn: '', prompt_en: '', function: [], risk: 'low', note: '' },
+  comboWithin: { id: '', cn: '', parts: [], prompt_cn: '', prompt_en: '', when: '', risk: 'mid' },
+  comboSeq: { id: '', cn: '', seq: [], when: '' },
+  neg: { id: '', cn: '', en: '', tier: 'common', note: '' },
+  cameraProfile: { '用于': '', allow: [], combos: [], recommended_sequences: [], max_moves_per_episode: null, why: '' },
+  skeletonProfile: {
+    skeleton: { '用于': '', structure_cn: [], guardrail_cn: '', guardrail_en: '' },
+    checklist: [],
+  },
+};
+
+// frame_style_skeletons（单个对象）和 scene_anchor_checklists（数组）按 profile
+// 名字成对存在——后端校验强制两边的 profile 集合必须完全一致（config_validate.py
+// validate_style_library），单独改一边很容易存出一个校验会拒绝、还搞不清哪里
+// 错了的半成品。所以这里不拆成两套独立 CRUD，一个 profile 名字下的 skeleton +
+// checklist 当成一条记录一起编辑、一起删——跟"带 id 的对象数组"/"扁平 profile
+// 字典"都不是同一种形状，单独写一套，不硬塞进 editArrayItem/editProfile。
+function editStyleSkeletonProfile({ doc, apiPath, profileName, template, onSaved }) {
+  const skeletons = doc.frame_style_skeletons || (doc.frame_style_skeletons = {});
+  const checklists = doc.scene_anchor_checklists || (doc.scene_anchor_checklists = {});
+  const existing = profileName
+    ? { skeleton: skeletons[profileName] || {}, checklist: checklists[profileName] || [] }
+    : null;
+  const title = existing ? `编辑风格骨架 profile：${profileName}` : '新增风格骨架 profile';
+  const nameFieldHtml = existing ? '' : `
+    <div class="field-row"><label>profile 名称（要跟镜头语言库的 camera_profile 同名，
+    起草流程才会用上，比如 dark_comedy_vertical）</label>
+      <input type="text" id="new-skeleton-profile-name" /></div>`;
+  showItemJsonModal(title, existing || template, async (edited, status) => {
+    let name = profileName;
+    if (!existing) {
+      name = document.getElementById('new-skeleton-profile-name')?.value.trim();
+      if (!name) { status.className = 'save-status err'; status.textContent = 'profile 名称必填'; return; }
+      if (skeletons[name] || checklists[name]) {
+        status.className = 'save-status err'; status.textContent = `profile ${name} 已经存在`; return;
+      }
+    }
+    if (!edited.skeleton || typeof edited.skeleton !== 'object' || Array.isArray(edited.skeleton)) {
+      status.className = 'save-status err'; status.textContent = 'skeleton 字段必须是一个对象（不是数组）'; return;
+    }
+    if (!Array.isArray(edited.checklist)) {
+      status.className = 'save-status err'; status.textContent = 'checklist 字段必须是一个数组'; return;
+    }
+    status.textContent = '保存中…';
+    const backupSk = { ...skeletons }, backupCl = { ...checklists };
+    skeletons[name] = edited.skeleton;
+    checklists[name] = edited.checklist;
+    try {
+      await api(apiPath, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: doc }) });
+    } catch (e) {
+      doc.frame_style_skeletons = backupSk; doc.scene_anchor_checklists = backupCl;
+      status.className = 'save-status err'; status.textContent = '保存失败：' + e.message;
+      return;
+    }
+    closeModal();
+    if (onSaved) onSaved();
+  }, nameFieldHtml);
+}
+
+async function deleteStyleSkeletonProfile({ doc, apiPath, profileName, onSaved }) {
+  const sure = await showConfirmModal(`确定删除风格骨架 profile「${profileName}」？skeleton 和 checklist 会一起删。`);
+  if (!sure) return;
+  await withProgress(async () => {
+    const skeletons = doc.frame_style_skeletons || {};
+    const checklists = doc.scene_anchor_checklists || {};
+    const backupSk = { ...skeletons }, backupCl = { ...checklists };
+    delete skeletons[profileName];
+    delete checklists[profileName];
+    try {
+      await api(apiPath, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: doc }) });
+    } catch (e) {
+      doc.frame_style_skeletons = backupSk; doc.scene_anchor_checklists = backupCl;
+      showNoticeModal('删除失败：' + e.message);
+      return;
+    }
+    if (onSaved) onSaved();
+  });
+}
+
+function renderConfigPage() {
+  const main = document.getElementById('main');
+  const cam = state.configCam, style = state.configStyle;
+  const shots = cam.shots || [];
+  const combosWithin = cam.combos_within_shot || [];
+  const combosSeq = cam.combos_sequence || [];
+  const profiles = cam.profiles || {};
+  const negPool = style.neg_pool || [];
+  const styleProfiles = style.profiles || [];
+  const skeletons = style.frame_style_skeletons || {};
+  const checklists = style.scene_anchor_checklists || {};
+  // 两边理论上该是同一组 key（后端存盘前会校验），但页面渲染不该假设文件已经
+  // 是合法状态——取并集，让"两边不一致"这种半成品也能被看见、点进去修，而不是
+  // 静默漏掉一半。
+  const skeletonNames = Array.from(new Set([...Object.keys(skeletons), ...Object.keys(checklists)])).sort();
+
+  const rowActions = (editFn, delFn) =>
+    `<td style="white-space:nowrap"><button class="review-btn" data-act="edit">改</button>
+     <button class="review-btn retake" data-act="del">删</button></td>`;
+
+  const shotRows = shots.map(s => `
+    <tr data-id="${escapeHtml(s.id)}">
+      <td>${escapeHtml(s.id)}</td><td>${escapeHtml(s.cn || '')}</td>
+      <td>${escapeHtml(s.cat || '')}</td><td>${escapeHtml(s.risk || '')}</td>
+      ${rowActions()}
+    </tr>`).join('');
+  const comboWithinRows = combosWithin.map(c => `
+    <tr data-id="${escapeHtml(c.id)}">
+      <td>${escapeHtml(c.id)}</td><td>${escapeHtml(c.cn || '')}</td><td>${escapeHtml(c.risk || '')}</td>
+      ${rowActions()}
+    </tr>`).join('');
+  const comboSeqRows = combosSeq.map(c => `
+    <tr data-id="${escapeHtml(c.id)}">
+      <td>${escapeHtml(c.id)}</td><td>${escapeHtml(c.cn || '')}</td><td>${(c.seq || []).length} 步</td>
+      ${rowActions()}
+    </tr>`).join('');
+  const profileRows = Object.entries(profiles).map(([name, p]) => `
+    <tr data-id="${escapeHtml(name)}">
+      <td>${escapeHtml(name)}</td>
+      <td style="font-size:11.5px;color:var(--dim)">${escapeHtml(p['用于'] || '')}</td>
+      <td>${(p.allow || []).length}</td><td>${(p.combos || []).length}</td>
+      <td>${p.max_moves_per_episode ?? '无限制'}</td>
+      ${rowActions()}
+    </tr>`).join('');
+  const negRows = negPool.map(n => `
+    <tr data-id="${escapeHtml(n.id)}">
+      <td>${escapeHtml(n.id)}</td><td>${escapeHtml(n.cn || '')}</td><td>${escapeHtml(n.tier || '')}</td>
+      ${rowActions()}
+    </tr>`).join('');
+  const skeletonRows = skeletonNames.map(name => {
+    const sk = skeletons[name] || {};
+    const cl = checklists[name] || [];
+    const mismatch = !(name in skeletons) || !(name in checklists);
+    return `
+    <tr data-id="${escapeHtml(name)}">
+      <td>${escapeHtml(name)}${mismatch ? ' <span class="badge error">skeleton/checklist 缺一半</span>' : ''}</td>
+      <td style="font-size:11.5px;color:var(--dim)">${escapeHtml(sk['用于'] || '')}</td>
+      <td>${cl.length}</td>
+      ${rowActions()}
+    </tr>`;
+  }).join('');
+
+  main.innerHTML = `
+    <div class="ep-header"><h2>基础配置</h2></div>
+    <p style="color:var(--dim);font-size:12.5px">这两份是所有项目共用的库——镜头语言库决定
+    camera_move/camera_combo/camera_profile 下拉框里能选什么，风格骨架库决定 AI 起草时
+    塞进系统提示词的画风指导。改一条、存一条，立刻对所有项目生效，不用重启服务。</p>
+
+    <div class="shot" style="margin-top:16px">
+      <div class="shot-top"><span class="sid">镜头语言库</span>
+        <span class="budget ok">${shots.length} 镜头 · ${combosWithin.length} 组合内 · ${combosSeq.length} 镜头组 · ${Object.keys(profiles).length} profile</span></div>
+
+      <details open style="margin-top:10px"><summary>镜头（${shots.length}）</summary>
+        <div class="row2"><button class="gen-btn" id="add-shot-btn">+ 新增镜头</button></div>
+        <table class="lines" style="margin-top:8px"><tbody id="shots-tbody">${shotRows}</tbody></table></details>
+
+      <details style="margin-top:10px"><summary>组合内运镜 combos_within_shot（${combosWithin.length}）</summary>
+        <div class="row2"><button class="gen-btn" id="add-combo-within-btn">+ 新增组合</button></div>
+        <table class="lines" style="margin-top:8px"><tbody id="combo-within-tbody">${comboWithinRows}</tbody></table></details>
+
+      <details style="margin-top:10px"><summary>镜头组 combos_sequence（${combosSeq.length}）</summary>
+        <div class="row2"><button class="gen-btn" id="add-combo-seq-btn">+ 新增镜头组</button></div>
+        <table class="lines" style="margin-top:8px"><tbody id="combo-seq-tbody">${comboSeqRows}</tbody></table></details>
+
+      <details style="margin-top:10px"><summary>Profile（${Object.keys(profiles).length}）</summary>
+        <div class="row2"><button class="gen-btn" id="add-camera-profile-btn">+ 新增 profile</button></div>
+        <table class="lines" style="margin-top:8px"><tbody id="camera-profile-tbody">${profileRows}</tbody></table></details>
+
+      <div class="row2"><button class="gen-btn" id="edit-camera-lib-btn">兜底：编辑整份 JSON</button></div>
+      <div id="camera-lib-editor" style="display:none;margin-top:10px">
+        <textarea class="draft-json" id="camera-lib-json">${escapeHtml(JSON.stringify(cam, null, 2))}</textarea>
+        <div class="row2"><button class="save-btn" id="save-camera-lib-btn">保存整份</button>
+          <span class="save-status" id="camera-lib-status"></span></div>
+      </div>
+    </div>
+
+    <div class="shot">
+      <div class="shot-top"><span class="sid">风格骨架库</span>
+        <span class="budget ok">${negPool.length} 条负向词 · ${styleProfiles.length} 起草 profile · ${skeletonNames.length} 骨架 profile</span></div>
+
+      <details open style="margin-top:10px"><summary>负向词池（${negPool.length}）</summary>
+        <div class="row2"><button class="gen-btn" id="add-neg-btn">+ 新增负向词</button></div>
+        <table class="lines" style="margin-top:8px"><tbody id="neg-tbody">${negRows}</tbody></table></details>
+
+      <details style="margin-top:10px"><summary>风格骨架 + 检查清单 frame_style_skeletons /
+        scene_anchor_checklists（${skeletonNames.length} 个 profile）</summary>
+        <p style="color:var(--dim);font-size:11.5px;margin:6px 0 0">按 profile 名字成对存在——
+        skeleton（画风骨架，一段结构化文案）和 checklist（场景锚点检查项，一个清单）绑在同一个
+        profile 名字下一起编辑、一起删，不能只改一半（后端存盘前会校验两边的 profile 集合
+        必须完全一致）。</p>
+        <div class="row2"><button class="gen-btn" id="add-skeleton-btn">+ 新增 profile</button></div>
+        <table class="lines" style="margin-top:8px"><tbody id="skeleton-tbody">${skeletonRows}</tbody></table></details>
+
+      <div class="row2" style="margin-top:10px"><button class="gen-btn" id="edit-style-lib-btn">兜底：编辑整份 JSON</button></div>
+      <div id="style-lib-editor" style="display:none;margin-top:10px">
+        <textarea class="draft-json" id="style-lib-json">${escapeHtml(JSON.stringify(style, null, 2))}</textarea>
+        <div class="row2"><button class="save-btn" id="save-style-lib-btn">保存整份</button>
+          <span class="save-status" id="style-lib-status"></span></div>
+      </div>
+    </div>`;
+
+  wireConfigRowActions('shots-tbody', (id, isEdit) => isEdit
+    ? editArrayItem({ doc: cam, apiPath: '/api/config/camera-library', collectionKey: 'shots', itemId: id, template: CONFIG_TEMPLATES.shot, itemLabel: '镜头', onSaved: onCameraLibSaved })
+    : deleteArrayItem({ doc: cam, apiPath: '/api/config/camera-library', collectionKey: 'shots', itemId: id, itemLabel: '镜头', onSaved: onCameraLibSaved }));
+  document.getElementById('add-shot-btn').onclick = () =>
+    editArrayItem({ doc: cam, apiPath: '/api/config/camera-library', collectionKey: 'shots', itemId: null, template: CONFIG_TEMPLATES.shot, itemLabel: '镜头', onSaved: onCameraLibSaved });
+
+  wireConfigRowActions('combo-within-tbody', (id, isEdit) => isEdit
+    ? editArrayItem({ doc: cam, apiPath: '/api/config/camera-library', collectionKey: 'combos_within_shot', itemId: id, template: CONFIG_TEMPLATES.comboWithin, itemLabel: '组合', onSaved: onCameraLibSaved })
+    : deleteArrayItem({ doc: cam, apiPath: '/api/config/camera-library', collectionKey: 'combos_within_shot', itemId: id, itemLabel: '组合', onSaved: onCameraLibSaved }));
+  document.getElementById('add-combo-within-btn').onclick = () =>
+    editArrayItem({ doc: cam, apiPath: '/api/config/camera-library', collectionKey: 'combos_within_shot', itemId: null, template: CONFIG_TEMPLATES.comboWithin, itemLabel: '组合', onSaved: onCameraLibSaved });
+
+  wireConfigRowActions('combo-seq-tbody', (id, isEdit) => isEdit
+    ? editArrayItem({ doc: cam, apiPath: '/api/config/camera-library', collectionKey: 'combos_sequence', itemId: id, template: CONFIG_TEMPLATES.comboSeq, itemLabel: '镜头组', onSaved: onCameraLibSaved })
+    : deleteArrayItem({ doc: cam, apiPath: '/api/config/camera-library', collectionKey: 'combos_sequence', itemId: id, itemLabel: '镜头组', onSaved: onCameraLibSaved }));
+  document.getElementById('add-combo-seq-btn').onclick = () =>
+    editArrayItem({ doc: cam, apiPath: '/api/config/camera-library', collectionKey: 'combos_sequence', itemId: null, template: CONFIG_TEMPLATES.comboSeq, itemLabel: '镜头组', onSaved: onCameraLibSaved });
+
+  wireConfigRowActions('camera-profile-tbody', (id, isEdit) => isEdit
+    ? editProfile({ doc: cam, apiPath: '/api/config/camera-library', profileName: id, template: CONFIG_TEMPLATES.cameraProfile, onSaved: onCameraLibSaved })
+    : deleteProfile({ doc: cam, apiPath: '/api/config/camera-library', profileName: id, onSaved: onCameraLibSaved }));
+  document.getElementById('add-camera-profile-btn').onclick = () =>
+    editProfile({ doc: cam, apiPath: '/api/config/camera-library', profileName: null, template: CONFIG_TEMPLATES.cameraProfile, onSaved: onCameraLibSaved });
+
+  wireConfigRowActions('neg-tbody', (id, isEdit) => isEdit
+    ? editArrayItem({ doc: style, apiPath: '/api/config/style-library', collectionKey: 'neg_pool', itemId: id, template: CONFIG_TEMPLATES.neg, itemLabel: '负向词', onSaved: onStyleLibSaved })
+    : deleteArrayItem({ doc: style, apiPath: '/api/config/style-library', collectionKey: 'neg_pool', itemId: id, itemLabel: '负向词', onSaved: onStyleLibSaved }));
+  document.getElementById('add-neg-btn').onclick = () =>
+    editArrayItem({ doc: style, apiPath: '/api/config/style-library', collectionKey: 'neg_pool', itemId: null, template: CONFIG_TEMPLATES.neg, itemLabel: '负向词', onSaved: onStyleLibSaved });
+
+  wireConfigRowActions('skeleton-tbody', (id, isEdit) => isEdit
+    ? editStyleSkeletonProfile({ doc: style, apiPath: '/api/config/style-library', profileName: id, template: CONFIG_TEMPLATES.skeletonProfile, onSaved: onStyleLibSaved })
+    : deleteStyleSkeletonProfile({ doc: style, apiPath: '/api/config/style-library', profileName: id, onSaved: onStyleLibSaved }));
+  document.getElementById('add-skeleton-btn').onclick = () =>
+    editStyleSkeletonProfile({ doc: style, apiPath: '/api/config/style-library', profileName: null, template: CONFIG_TEMPLATES.skeletonProfile, onSaved: onStyleLibSaved });
+
+  document.getElementById('edit-camera-lib-btn').onclick = () => {
+    const editor = document.getElementById('camera-lib-editor');
+    editor.style.display = editor.style.display === 'none' ? 'block' : 'none';
+  };
+  document.getElementById('save-camera-lib-btn').onclick = () => withProgress(() =>
+    saveWholeLibrary('camera-lib-json', 'camera-lib-status', '/api/config/camera-library', onCameraLibSaved));
+  document.getElementById('edit-style-lib-btn').onclick = () => {
+    const editor = document.getElementById('style-lib-editor');
+    editor.style.display = editor.style.display === 'none' ? 'block' : 'none';
+  };
+  document.getElementById('save-style-lib-btn').onclick = () => withProgress(() =>
+    saveWholeLibrary('style-lib-json', 'style-lib-status', '/api/config/style-library', onStyleLibSaved));
+}
+
+function onCameraLibSaved() { state.cameraOptions = null; showConfigPage(); }
+function onStyleLibSaved() { showConfigPage(); }
+
+function wireConfigRowActions(tbodyId, handler) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  tbody.querySelectorAll('tr').forEach(tr => {
+    const id = tr.dataset.id;
+    tr.querySelector('[data-act="edit"]').onclick = () => handler(id, true);
+    tr.querySelector('[data-act="del"]').onclick = () => handler(id, false);
+  });
+}
+
+async function saveWholeLibrary(jsonId, statusId, apiPath, onSaved) {
+  const status = document.getElementById(statusId);
+  status.className = 'save-status';
+  let data;
+  try {
+    data = JSON.parse(document.getElementById(jsonId).value);
+  } catch (e) {
+    status.className = 'save-status err';
+    status.textContent = 'JSON 格式不对：' + e.message;
+    return;
+  }
+  status.textContent = '保存中…';
+  try {
+    await api(apiPath, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data }) });
+  } catch (e) {
+    status.className = 'save-status err';
+    status.textContent = '保存失败：' + e.message;
+    return;
+  }
+  onSaved();
+}
+
+async function showNewProjectForm() {
+  document.querySelectorAll('aside .item.active').forEach(el => el.classList.remove('active'));
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="empty">加载镜头库…</div>';
+  let cams;
+  try {
+    cams = await api('/api/camera-options');
+  } catch (e) {
+    main.innerHTML = `<div class="empty">加载镜头库失败：${e.message}</div>`;
+    return;
+  }
+  // 顺手存进 state——草稿逐镜编辑里运镜下拉框要用这个，
+  // 之前只在 selectEpisode() 里存，直接从侧边栏点「新建项目」进来（没先看过
+  // 任何一个可编辑的已保存项目）的话 state.cameraOptions 会是空的，草稿页
+  // 的运镜下拉框就会退化成一行纯文字，不是真的坏，但明显缺了这一环。
+  state.cameraOptions = cams;
+  const profileOpts = cams.profiles.map(p => `<option value="${p}">${p}</option>`).join('');
+  main.innerHTML = `
+    <div class="new-project-form" style="margin-bottom:14px">
+      <h2 style="margin-top:0">从示例开始</h2>
+      <p style="color:var(--dim);font-size:12.5px">不用起草、不花钱：把随程序附带的示例剧集复制成你的项目，直接进入「锁定 → 出首帧」。
+      台词、角色、旁白都可以在项目页里改。</p>
+      <div id="new-project-examples"></div>
+    </div>
+    <div class="new-project-form">
+      <h2 style="margin-top:0">新建项目 · AI 起草剧本+分镜</h2>
+      <p style="color:var(--dim);font-size:12.5px">点「生成草稿」会用「模型设置」里的<b>剧本文本模型</b>起草整集（cast、逐镜画面、台词、运镜），
+      会真花钱/真耗用量，但和图片/视频生成不是一个量级。
+      产出先只在这个页面里，确认/改完之后再点「保存为新项目」才会真的写文件。</p>
+      ${unconfiguredRolesHtml(['text'])}
+      <div class="field-row"><label>项目 id（英文/数字/短横线，且还不存在）</label>
+        <input type="text" data-f="episode_id" placeholder="如 XXX-YYY-001" /></div>
+      <div class="field-row"><label>大致方向</label>
+        <textarea data-f="direction" placeholder="故事方向、人物、冲突、想要的调性……越具体越好"></textarea></div>
+      <div class="field-row"><label>目标总时长（秒）</label>
+        <input type="number" data-f="target_seconds" value="90" /></div>
+      <div class="field-row"><label>镜头语言 profile</label>
+        <select data-f="camera_profile">${profileOpts}</select></div>
+      <div class="field-row"><label>提示词语言</label>
+        <select data-f="prompt_language">
+          <option value="zh" selected>中文（新项目默认）</option>
+          <option value="en">英文</option>
+        </select></div>
+      <div class="field-row"><label>角色/关系提示（可选）</label>
+        <textarea data-f="cast_hint" placeholder="主要角色、关系、声音特征……不填就让模型自己设计"></textarea></div>
+      <button class="gen-btn spend" id="gen-draft-btn">生成草稿</button>
+      <span class="gen-status" id="gen-draft-status"></span>
+    </div>`;
+  document.getElementById('gen-draft-btn').onclick = () => withProgress(submitNewProjectForm);
+  wireSettingsLinks(main);
+  renderExampleStarter(document.getElementById('new-project-examples'));
+}
+
+const JOB_POLL_INTERVAL_MS = 4000;
+
+// job 提交即返回 job_id，真正的生成在服务端后台线程跑——这个轮询只是「当前
+// 这个标签页恰好还开着」时用来实时刷新进度，跟服务端是否还在跑完全解耦：
+// 就算这个轮询循环因为切页面/关标签页而死掉，job 本身照样在磁盘上跑完，
+// 下次进页面会被 checkPendingJobs() 的恢复条捞回来。
+// stopToken 停的是"前端还盯不盯着看"，不是 job 本身——job 是后台线程真的在
+// 跑（真花钱/真耗用量），前端脚本停了它也照样跑完、照样写进 job 记录，回到
+// 首页的恢复条（checkPendingJobs）还能找到。这跟 pollGenerate 的 stopToken
+// 是同一个诚实边界：要的是"能停止盯着看"，不是一个技术上做
+// 不到的"真取消"承诺。
+async function pollScriptJob(jobId, onTick, stopToken) {
+  const startedAt = Date.now();
+  while (true) {
+    if (stopToken && stopToken.stopped) return { status: 'watch_stopped', job_id: jobId };
+    const job = await api(`/api/scripts/jobs/${jobId}`);
+    const elapsed = Math.round((Date.now() - startedAt) / 1000);
+    if (onTick) onTick(job, elapsed);
+    if (job.status === 'succeeded' || job.status === 'failed') return job;
+    await new Promise(r => setTimeout(r, JOB_POLL_INTERVAL_MS));
+  }
+}
+
+async function submitNewProjectForm() {
+  const form = document.querySelector('.new-project-form');
+  const get = f => form.querySelector(`[data-f="${f}"]`).value;
+  const payload = {
+    episode_id: get('episode_id').trim(),
+    direction: get('direction'),
+    target_seconds: Number(get('target_seconds')) || 90,
+    camera_profile: get('camera_profile'),
+    prompt_language: get('prompt_language'),
+    cast_hint: get('cast_hint').trim() || null,
+  };
+  if (!payload.episode_id || !payload.direction.trim()) {
+    showNoticeModal('项目 id 和大致方向都要填');
+    return;
+  }
+  const status = document.getElementById('gen-draft-status');
+  status.className = 'gen-status';
+  document.getElementById('gen-draft-btn').disabled = true;
+  let jobId;
+  try {
+    const created = await api('/api/scripts/jobs/draft', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    jobId = created.job_id;
+  } catch (e) {
+    status.className = 'gen-status err';
+    status.textContent = '提交失败：' + e.message;
+    document.getElementById('gen-draft-btn').disabled = false;
+    return;
+  }
+  let job;
+  const stopToken = makeStopToken();
+  try {
+    job = await pollScriptJob(jobId, (j, elapsed) => {
+      const s = document.getElementById('gen-draft-status');
+      if (s) {
+        s.textContent = `生成中…已经 ${elapsed}s（可以放心切走/刷新页面，进度记在服务端，回来能在页面顶部找回）`;
+        ensureStopButton(s, stopToken, '停止查看进度');
+      }
+    }, stopToken);
+  } catch (e) {
+    removeStopButton();
+    status.className = 'gen-status err';
+    status.textContent = `轮询失败：${e.message}（job 可能还在跑，回到首页看顶部的恢复条）`;
+    document.getElementById('gen-draft-btn').disabled = false;
+    return;
+  }
+  removeStopButton();
+  if (job.status === 'watch_stopped') {
+    status.className = 'gen-status';
+    status.textContent = '已停止查看进度——起草仍在后台跑，真花的钱/用量不受影响，回到首页顶部的恢复条能找回结果。';
+    document.getElementById('gen-draft-btn').disabled = false;
+    return;
+  }
+  if (job.status === 'failed') {
+    status.className = 'gen-status err';
+    status.textContent = '生成失败：' + job.error;
+    document.getElementById('gen-draft-btn').disabled = false;
+    return;
+  }
+  renderDraftPreview(payload.episode_id, job.result);
+}
+
+// 项目级花费汇总：job 记录从不删除，天然是这个项目从起草到
+// 现在的完整花费明细，这里只是聚合展示。美元价和 tokens 分开累计——两种后端
+// 不是同一个计价单位，不能加在一起充数。draft-preview（未保存）和已保存项目
+// 详情页共用这份聚合逻辑，避免两处各写一套算法各自出错。
+function costSummaryHtml(succeeded) {
+  let totalCost = 0, costCount = 0, totalTokens = 0, tokensOnlyCount = 0;
+  for (const j of succeeded) {
+    const cost = j.result?.cost_usd, tokens = j.result?.usage_tokens;
+    if (typeof cost === 'number') { totalCost += cost; costCount++; }
+    else if (typeof tokens === 'number') { totalTokens += tokens; tokensOnlyCount++; }
+  }
+  const parts = [];
+  if (costCount) parts.push(`<b>$${totalCost.toFixed(4)}</b>（${costCount} 次）`);
+  if (tokensOnlyCount) parts.push(`<b>${totalTokens}</b> tokens（${tokensOnlyCount} 次，这条后端不直接报美元价）`);
+  if (!parts.length) return '';
+  return `<div class="cost-summary">这个项目从起草到现在累计花费：${parts.join(' + ')}，
+    共 ${succeeded.length} 次成功调用（含整份起草和单镜重写，失败的调用不算钱）。</div>`;
+}
+
+// 已保存/已锁定项目详情页：只展示花费汇总，不带版本历史表——"恢复这个版本"
+// 这个动作是拿 job 里存的 spec 整份替换 #draft-json 编辑框，只在未保存的
+// 草稿预览页里有意义；锁定项目页面没有那个编辑框，硬塞一样的表会诱导点一个
+// 语义不对的按钮。要看完整版本历史，去起草流程本身的记录里看。
+async function renderCostSummary(episodeId) {
+  const container = document.getElementById('job-history');
+  if (!container) return;
+  let jobs;
+  try {
+    jobs = await api(`/api/scripts/jobs?episode_id=${encodeURIComponent(episodeId)}`);
+  } catch (e) {
+    return;
+  }
+  container.innerHTML = costSummaryHtml(jobs.filter(j => j.status === 'succeeded'));
+}
+
+async function renderJobHistory(episodeId) {
+  const container = document.getElementById('job-history');
+  if (!container) return;
+  let jobs;
+  try {
+    jobs = await api(`/api/scripts/jobs?episode_id=${encodeURIComponent(episodeId)}`);
+  } catch (e) {
+    return;
+  }
+  const succeeded = jobs.filter(j => j.status === 'succeeded');
+  if (!succeeded.length) { container.innerHTML = ''; return; }
+  const summaryHtml = costSummaryHtml(succeeded);
+
+  // job 记录从不删除，一个反复打磨的项目历史会一直涨——只展示最近 20 条，
+  // 更早的版本仍然全部留在磁盘上（jobs 接口本身不分页），只是不在这里堆出来；
+  // 花费汇总用的是全部 succeeded（不受这个展示上限影响），不会漏算早期版本。
+  const HISTORY_DISPLAY_CAP = 20;
+  const shown = succeeded.slice(0, HISTORY_DISPLAY_CAP);
+  const omittedNote = succeeded.length > HISTORY_DISPLAY_CAP
+    ? `<p style="color:var(--dim);font-size:11.5px">还有 ${succeeded.length - HISTORY_DISPLAY_CAP} 条更早的版本没有列出（都还在磁盘上，没有丢）。</p>`
+    : '';
+  const rows = shown.map(j => {
+    const when = new Date(j.created_at * 1000).toLocaleString();
+    const kindLabel = j.kind === 'regenerate_shot' ? `重写单镜（${j.params?.shot_id || ''}）` : '整份起草';
+    const costLabel = typeof j.result?.cost_usd === 'number' ? `$${j.result.cost_usd.toFixed(4)}`
+      : (typeof j.result?.usage_tokens === 'number' ? `${j.result.usage_tokens} tokens` : '');
+    return `<tr>
+      <td>${when}</td><td>${kindLabel}</td><td>${costLabel}</td>
+      <td><button class="review-btn" data-restore-job="${j.job_id}">恢复这个版本</button></td>
+    </tr>`;
+  }).join('');
+  container.innerHTML = summaryHtml + `
+    <details style="margin-top:12px">
+      <summary>版本历史（${succeeded.length} 次尝试，每次都真花过钱/用量，点"恢复"会用那个版本整份替换当前编辑框）</summary>
+      <table style="width:100%;font-size:12px;margin-top:8px"><tbody>${rows}</tbody></table>
+      ${omittedNote}
+    </details>`;
+  container.querySelectorAll('[data-restore-job]').forEach(btn => {
+    btn.onclick = async () => {
+      const job = await api(`/api/scripts/jobs/${btn.dataset.restoreJob}`);
+      if (job.result) renderDraftPreview(episodeId, job.result);
+    };
+  });
+}
+
+function renderDraftPreview(episodeId, resp) {
+  const main = document.getElementById('main');
+  let html = `<div class="ep-header"><h2>${episodeId}（草稿，尚未保存）</h2>`;
+  const backendLabel = resp.backend === 'openai_proxy' ? 'LLM 代理' : resp.backend === 'claude_cli' ? 'claude CLI' : resp.backend || '';
+  if (typeof resp.cost_usd === 'number') {
+    html += `<span class="save-status">${backendLabel} · 实际花费 $${resp.cost_usd.toFixed(4)}</span>`;
+  } else if (typeof resp.usage_tokens === 'number') {
+    html += `<span class="save-status">${backendLabel} · 用了 ${resp.usage_tokens} tokens（这条后端不直接报美元价）</span>`;
+  } else if (backendLabel) {
+    html += `<span class="save-status">${backendLabel}</span>`;
+  }
+  html += '</div>';
+  if (resp.warnings && resp.warnings.length) {
+    html += '<div class="warnings">' + resp.warnings.map(w => `<div>⚠ ${w}</div>`).join('') + '</div>';
+  }
+  html += `<p style="color:var(--dim);font-size:12.5px">${escapeHtml(resp.spec.title_zh || '')} — ${escapeHtml(resp.spec.logline || '')}</p>`;
+  html += `<div id="job-history"></div>`;
+  // 草稿态逐镜编辑跟已保存项目共用同一套 renderShot/
+  // wireShotHandlers——之前这里是只读文字 + 底下一整块 JSON 编辑框，改一句
+  // 台词得在几十上百行 JSON 里找那一个字段。现在跟保存后的编辑手感一样：
+  // 每一镜有自己的文本框/运镜下拉框，"重写这一镜"（会调用 AI、真花钱）作为
+  // 额外操作项附加在同一张卡片上，跟免费的"保存这一镜"（纯本地合并，不调用
+  // AI）用视觉分层区分开（.save-btn.compact vs .gen-btn.spend）。
+  for (const shot of resp.shots) {
+    const extraActionsHtml = `<div class="row2" style="margin-top:8px">
+      <button class="gen-btn spend" data-regen-shot="${shot.id}">重写这一镜（调用 AI，只花这一镜的钱，不动其它镜次）</button>
+    </div>`;
+    html += renderShot(shot, { editable: true, showGenRow: false, extraActionsHtml });
+  }
+  html += `
+    <div class="new-project-form" style="margin-top:16px">
+      <h3 style="margin-top:0">兜底：直接编辑整份 JSON</h3>
+      <p style="color:var(--dim);font-size:12.5px">上面每一镜的文本框/下拉框已经覆盖日常编辑；这个整份 JSON
+      编辑框留给结构性改动（加/删镜次、改 cast、改 output_root 这类逐镜表单没覆盖的字段）。
+      改完文本再点保存；保存前会重新走一遍结构+镜头库校验，校验不过不会写盘。</p>
+      <textarea class="draft-json" id="draft-json">${escapeHtml(JSON.stringify(resp.spec, null, 2))}</textarea>
+      <div class="row2" style="margin-top:10px">
+        <button class="gen-btn spend" id="draft-regen-btn">重新生成整份草稿（再次调用 API，再产生一次费用）</button>
+        <button class="save-btn" id="draft-save-btn">保存为新项目</button>
+        <span class="gen-status" id="draft-save-status"></span>
+      </div>
+    </div>`;
+  main.innerHTML = html;
+  wireShotHandlers(
+    shotId => resp.shots.find(s => s.id === shotId),
+    (shotId, payload, status) => saveDraftShot(episodeId, resp, shotId, payload, status),
+  );
+  document.getElementById('draft-regen-btn').onclick = showNewProjectForm;
+  document.getElementById('draft-save-btn').onclick = () => withProgress(() => saveDraft(episodeId));
+  document.querySelectorAll('[data-regen-shot]').forEach(btn => {
+    btn.onclick = () => withProgress(() => regenerateDraftShot(episodeId, btn.dataset.regenShot));
+  });
+  renderJobHistory(episodeId);
+}
+
+async function regenerateDraftShot(episodeId, shotId) {
+  const feedback = await showPromptModal(`这一镜（${shotId}）想怎么改？（可以留空，让模型自由改进）`, { placeholder: '留空 = 让模型自由改进', confirmLabel: '重写' });
+  if (feedback === null) return; // 用户取消
+  let spec;
+  try {
+    spec = JSON.parse(document.getElementById('draft-json').value);
+  } catch (e) {
+    showNoticeModal('当前 JSON 格式不对，先修好再重写单镜：' + e.message);
+    return;
+  }
+  const btn = document.querySelector(`[data-regen-shot="${shotId}"]`);
+  const originalLabel = '重写这一镜（只花这一镜的钱，不动其它镜次）';
+  let jobId;
+  try {
+    const created = await api('/api/scripts/jobs/shot', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ episode_id: episodeId, spec, shot_id: shotId, feedback: feedback || null }),
+    });
+    jobId = created.job_id;
+  } catch (e) {
+    showNoticeModal('提交失败：' + e.message);
+    return;
+  }
+  if (btn) btn.disabled = true;
+  let job;
+  const stopToken = makeStopToken();
+  try {
+    job = await pollScriptJob(jobId, (j, elapsed) => {
+      if (btn) {
+        btn.textContent = `重写中…${elapsed}s`;
+        ensureStopButton(btn, stopToken, '停止查看');
+      }
+    }, stopToken);
+  } catch (e) {
+    removeStopButton();
+    showNoticeModal(`轮询失败：${e.message}（job 可能还在跑，回到首页看顶部的恢复条）`);
+    if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    return;
+  }
+  removeStopButton();
+  if (job.status === 'watch_stopped') {
+    if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    showNoticeModal('已停止查看进度——重写仍在后台跑，真花的钱/用量不受影响，回到首页顶部的恢复条能找回结果。');
+    return;
+  }
+  if (job.status === 'failed') {
+    showNoticeModal('重写失败：' + job.error);
+    if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    return;
+  }
+  renderDraftPreview(episodeId, job.result);
+}
+
+async function saveDraft(episodeId) {
+  const status = document.getElementById('draft-save-status');
+  status.className = 'gen-status';
+  let spec;
+  try {
+    spec = JSON.parse(document.getElementById('draft-json').value);
+  } catch (e) {
+    status.className = 'gen-status err';
+    status.textContent = 'JSON 格式不对，改不动：' + e.message;
+    return;
+  }
+  status.textContent = '保存中…';
+  document.getElementById('draft-save-btn').disabled = true;
+  try {
+    await api('/api/scripts/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ episode_id: episodeId, spec }),
+    });
+  } catch (e) {
+    status.className = 'gen-status err';
+    status.textContent = '保存失败：' + e.message;
+    document.getElementById('draft-save-btn').disabled = false;
+    return;
+  }
+  await loadSidebar();
+  await selectEpisode('storyvideo', episodeId);
+  checkPendingJobs();
+}
+
+// 恢复条只关心两类 job：还在跑的（需要接着轮询）、成功了但这个 episode_id
+// 还没保存成正式项目的（result 真花过钱，不该因为标签页关了就找不回）。
+// 按 episode_id 去重只留最新一条，避免同一个项目重复尝试几次把条挤爆。
+async function checkPendingJobs() {
+  const banner = document.getElementById('cache-banner');
+  let jobs;
+  try {
+    jobs = await api('/api/scripts/jobs');
+  } catch (e) {
+    return; // 静默失败——这只是个提醒条，不该因为它自己出错就干扰主流程
+  }
+  const byEpisode = {};
+  for (const j of jobs) {
+    if (j.dismissed) continue;
+    if (j.saved) continue;
+    if (!['pending', 'running', 'succeeded'].includes(j.status)) continue;
+    const cur = byEpisode[j.episode_id];
+    if (!cur || (j.created_at || 0) > (cur.created_at || 0)) byEpisode[j.episode_id] = j;
+  }
+  const entries = Object.values(byEpisode);
+  if (!entries.length) { banner.innerHTML = ''; return; }
+  banner.innerHTML = entries.map(j => {
+    const running = j.status === 'pending' || j.status === 'running';
+    const label = running ? '还在生成中' : '生成完了，还没保存';
+    return `<div class="toast">
+      <div class="toast-msg">⚠ <b>${j.episode_id}</b> ${label}（真花过钱/正在花钱，标签页关了也不会丢）</div>
+      <div class="toast-actions">
+        <button data-resume-job="${j.job_id}" data-resume-episode="${j.episode_id}">${running ? '查看进度' : '恢复查看'}</button>
+        <button data-dismiss-job="${j.job_id}">不再提醒</button>
+      </div>
+    </div>`;
+  }).join('');
+  banner.querySelectorAll('[data-resume-job]').forEach(btn => {
+    btn.onclick = () => withProgress(() => resumeJob(btn.dataset.resumeJob, btn.dataset.resumeEpisode));
+  });
+  banner.querySelectorAll('[data-dismiss-job]').forEach(btn => {
+    btn.onclick = async () => {
+      await api(`/api/scripts/jobs/${btn.dataset.dismissJob}/dismiss`, { method: 'POST' });
+      checkPendingJobs();
+    };
+  });
+}
+
+async function resumeJob(jobId, episodeId) {
+  document.querySelectorAll('aside .item.active').forEach(el => el.classList.remove('active'));
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="empty">恢复中…</div>';
+  let job;
+  try {
+    job = await api(`/api/scripts/jobs/${jobId}`);
+  } catch (e) {
+    main.innerHTML = `<div class="empty">恢复失败：${e.message}</div>`;
+    return;
+  }
+  if (job.status === 'succeeded' && job.result) {
+    renderDraftPreview(episodeId, job.result);
+    return;
+  }
+  if (job.status === 'failed') {
+    main.innerHTML = `<div class="empty">这次尝试失败了：${escapeHtml(job.error || '')}</div>`;
+    return;
+  }
+  // 还在跑：接着轮询，跟第一次提交时是同一个视觉状态
+  main.innerHTML = `<div class="new-project-form"><h2 style="margin-top:0">${episodeId}</h2>
+    <span class="gen-status" id="gen-draft-status">恢复轮询中…</span></div>`;
+  let resumed;
+  const stopToken = makeStopToken();
+  try {
+    resumed = await pollScriptJob(jobId, (j, elapsed) => {
+      const s = document.getElementById('gen-draft-status');
+      if (s) {
+        s.textContent = `生成中…已经 ${elapsed}s`;
+        ensureStopButton(s, stopToken, '停止查看进度');
+      }
+    }, stopToken);
+  } catch (e) {
+    removeStopButton();
+    return;
+  }
+  removeStopButton();
+  if (resumed.status === 'watch_stopped') {
+    const s = document.getElementById('gen-draft-status');
+    if (s) s.textContent = '已停止查看进度——仍在后台跑，回到首页顶部的恢复条能再次找回。';
+    return;
+  }
+  if (resumed.status === 'succeeded') renderDraftPreview(episodeId, resumed.result);
+  else showNoticeModal('生成失败：' + resumed.error);
+}
+
+// 先拿环境状态再画侧边栏——空状态引导第一步要按角色配置状态盖章
+loadHealth().then(() => loadSidebar());
+checkPendingJobs();
+</script>
+<script src="/static/settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "_comment": "映射：把请求里的字段放到工作流的哪个位置。路径写成 [节点号, \"inputs\", 字段名]；output 只写节点号。",
+  "task": "image",
+  "title": "SDXL 文生图",
+  "prompt": ["6", "inputs", "text"],
+  "negative": ["7", "inputs", "text"],
+  "width": ["5", "inputs", "width"],
+  "height": ["5", "inputs", "height"],
+  "seed": ["3", "inputs", "seed"],
+  "steps": ["3", "inputs", "steps"],
+  "cfg": ["3", "inputs", "cfg"],
+  "model": ["4", "inputs", "ckpt_name"],
+  "output": "9"
+}

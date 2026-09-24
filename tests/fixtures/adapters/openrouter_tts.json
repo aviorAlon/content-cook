@@ -1,0 +1,15 @@
+{
+  "role": "voice",
+  "adapter": "openrouter_tts",
+  "config": {
+    "api_key": "k",
+    "model": "openai/tts-1",
+    "voice": "alloy"
+  },
+  "responses": {
+    "tts.create_speech": {
+      "content": "$BYTES:MP3DATA"
+    }
+  },
+  "expect": {}
+}

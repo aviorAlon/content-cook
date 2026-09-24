@@ -1,0 +1,28 @@
+{
+  "role": "video",
+  "adapter": "ark_video",
+  "config": {
+    "api_key": "k",
+    "model": "doubao-seedance-2-0-260128"
+  },
+  "responses": {
+    "content_generation.tasks.create": {
+      "id": "t1"
+    },
+    "content_generation.tasks.get": {
+      "status": "succeeded",
+      "content": {
+        "video_url": "https://ark.example/v.mp4"
+      }
+    }
+  },
+  "expect": {
+    "task_id_prefix": "ark:",
+    "final_status": "FINISHED",
+    "duration": 5,
+    "payload_contains": [
+      "--duration 5",
+      "first_frame"
+    ]
+  }
+}

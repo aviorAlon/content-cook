@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "storystudio"
+dynamic = ["version"]
+description = "Content Cook · 内容创作工作台（本地版）：多模块的 AI 内容创作工具，模型自己配；短剧模块：剧本 → 分镜 → 首帧 → 视频 → 质检 → 后期合成"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "avioralon" }]
+dependencies = [
+    "requests>=2.31,<3",
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+    "pydantic>=2",
+    "openai>=1.40",
+    "openrouter>=1.1",
+    "volcengine-python-sdk>=5.0",
+    "edge-tts>=7",
+    "Pillow>=10",
+    "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+desktop = ["pywebview>=5", "pyinstaller>=6"]
+asr = ["faster-whisper>=1.0"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+storystudio = "studio.desktop:main"
+storyvideo = "storyvideo.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.dynamic]
+version = {attr = "genkit.version.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+webui = ["static/*", "static/app/*", "static/app/assets/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

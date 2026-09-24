@@ -1,0 +1,43 @@
+{
+  "id": "CANARY",
+  "prompt_language": "zh",
+  "dialogue_prompt": "auto",
+  "camera_profile": "ghost_pov",
+  "performance_lock": true,
+  "frame_style": "竖屏写实短剧的一帧画面，自然光。",
+  "scene_anchor": "按原生 9:16 构图。镜头是合租室友的眼睛。",
+  "camera": "第一人称覆盖方式：齐眼高度，单次长镜。",
+  "neg": "可读文字, 字幕, 水印",
+  "video_lock": " 场景与首帧一致。",
+  "video_tail_lock": " 每镜只有一个主导动作。",
+  "visual_style": {
+    "medium": "手机实拍质感的写实画面，自然光",
+    "palette": [{"hex": "#EDE6D8", "role": "主色"}, {"hex": "#3A3F47", "role": "暗部"}, {"hex": "#7A9E7E", "role": "点缀"}],
+    "edge": "自然柔边，无描线",
+    "finish": "全片同一完成度"
+  },
+  "cast": {
+    "song": {"name": "宋晴", "voice": "清亮、语速偏慢的年轻女声", "asset": "asset-song", "block": "宋晴：低丸子头，燕麦色针织开衫，左手腕一块黑色细带手表。"},
+    "livingroom": {"block": "客厅·午后：一张原木矮茶几、一排靠墙的白色书架、一扇朝西的窗。"}
+  },
+  "shots": [
+    {"id": "S1_JOLT", "dur": 6, "cast": ["livingroom", "song"], "shot": "第一人称，站在书架旁，中景", "art": "她侧身站在书架前，书架顶层边上放着一只白色马克杯。",
+     "motion": "两拍：①她踮脚抽顶层的一本书，马克杯被带得歪向边沿；②画面猛地往前一冲，她自己一把扶住了杯子。", "camera_move": "pov_punch", "sfx": "杯底磕在木板上一声", "lines": [],
+     "exit_state": "她一只手扶着顶层的马克杯，另一只手拿着抽出来的书；客厅安静。"},
+    {"id": "S2_TURN", "dur": 6, "cast": ["livingroom", "song"], "shot": "第一人称，茶几旁，近景", "art": "她一手拿书、一手拿着马克杯，站在茶几边。",
+     "motion": "唯一动作：她把马克杯放到茶几上。", "camera_move": "hold_stare", "sfx": "杯底碰到木头台面", "ref_frame": "S1_JOLT",
+     "entry_state": "她一手拿书、一手拿着马克杯站在茶几边，视线落在杯子上。",
+     "beats": [{"t": "0-2", "picture": "她站定，杯子还在手里", "sound": "窗外远处有车经过"}, {"t": "2-6", "performance": "她弯腰把杯子放到茶几正中，手指在杯把上停了一下，抬眼看向镜头一侧"}],
+     "exit_state": "她一只手还搭在杯把上，视线落在镜头一侧。",
+     "lines": []},
+    {"id": "S3_LINE", "dur": 5, "cast": ["livingroom", "song"], "shot": "第一人称，紧接上一镜，她的脸在画面中部", "art": "她一只手搭在杯把上，看着镜头一侧。",
+     "motion": "唯一动作：她不紧不慢地说一句。", "camera_move": "hold_stare", "sfx": "安静", "ref_frame": "S2_TURN",
+     "entry_state": "她一只手还搭在杯把上，视线落在镜头一侧。",
+     "lines": [{"who": "song", "zh": "书我自己拿就行，你坐着吧。", "tone": "平静、语速慢，音量正常，口齿清楚"}]},
+    {"id": "S4_OFFSCREEN", "dur": 5, "cast": ["livingroom"], "shot": "第一人称，低头看茶几，特写", "art": "马克杯放在茶几正中，旁边摊着那本书。",
+     "motion": "唯一动作：窗帘被风吹起，影子在茶几上轻轻晃了一下。", "camera_move": "pov_look_down", "sfx": "玄关传来换鞋的声音", "speech_mode": "offscreen_narration",
+     "lines": [{"who": "song", "zh": "我出门了，钥匙在鞋柜上。", "tone": "随口、轻，口齿清楚"}]},
+    {"id": "S5_SELFIE", "dur": 5, "cast": ["livingroom", "song"], "shot": "前置自拍，脸离镜头很近", "art": "她举着手机。",
+     "motion": "唯一动作：她对着镜头眨眼。", "camera_move": "hold_stare", "gaze": "camera", "sfx": "无", "lines": []}
+  ]
+}

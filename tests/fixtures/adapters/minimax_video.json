@@ -1,0 +1,45 @@
+{
+  "role": "video",
+  "adapter": "minimax_video",
+  "config": {
+    "api_key": "k",
+    "model": "MiniMax-Hailuo-02",
+    "base_url": "https://api.minimax.chat/v1"
+  },
+  "http": [
+    {
+      "match": "/query/video_generation",
+      "json": {
+        "status": "Success",
+        "file_id": "f1"
+      }
+    },
+    {
+      "match": "/video_generation",
+      "json": {
+        "task_id": "9",
+        "base_resp": {
+          "status_code": 0
+        }
+      }
+    },
+    {
+      "match": "/files/retrieve",
+      "json": {
+        "file": {
+          "download_url": "https://mm.example/v.mp4"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "task_id_prefix": "minimax:",
+    "final_status": "FINISHED",
+    "duration": 6,
+    "resolution": "768P",
+    "payload_contains": [
+      "first_frame_image",
+      "data:image/png"
+    ]
+  }
+}

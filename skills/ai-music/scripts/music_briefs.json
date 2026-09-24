@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "note": "配乐预设 brief（docs/music-spec.md §2）。形状对齐项目文件的 brief 字段：选了就填进表单，之后随便改。measure 是给人看的一句话说明，不进提示词。",
+  "briefs": [
+    {
+      "id": "bedtime_lullaby",
+      "name": "睡前摇篮曲",
+      "english": "Bedtime lullaby",
+      "note": "绘本睡前朗读的底噪：不抢旁白，最后要能安静地收掉。",
+      "note_en": "Under a bedtime narration: never competes with the voice, and fades to nothing at the end.",
+      "duration": 120,
+      "brief": {
+        "usage": "绘本睡前朗读的底噪",
+        "mood": ["温柔", "安定", "困倦"],
+        "genre": "摇篮曲",
+        "instruments": ["音乐盒", "轻钢琴", "弦乐衬底"],
+        "bpm": 70,
+        "structure": "前 8 秒渐入，中段平稳，最后 3 秒渐弱到无",
+        "avoid": ["鼓组", "人声", "强节拍"]
+      }
+    },
+    {
+      "id": "epic_war_drums",
+      "name": "史诗战鼓",
+      "english": "Epic war drums",
+      "note": "对峙、进场、反击的高点：靠鼓和低铜管顶起来，留一个空拍给台词。",
+      "note_en": "For confrontations and turnarounds: drums and low brass carry it, with a gap left for dialogue.",
+      "duration": 90,
+      "brief": {
+        "usage": "短剧对峙与反击段落的推进",
+        "mood": ["紧迫", "壮阔", "决绝"],
+        "genre": "史诗管弦",
+        "instruments": ["大鼓", "低音铜管", "弦乐齐奏", "人声吟唱衬底"],
+        "bpm": 120,
+        "structure": "四小节鼓点起势，中段加铜管，最后八拍全停留一个空拍",
+        "avoid": ["电子音色", "明亮旋律", "甜美和声"]
+      }
+    },
+    {
+      "id": "city_upbeat",
+      "name": "都市轻快",
+      "english": "Upbeat city",
+      "note": "日常、通勤、开场：轻快但不吵，适合垫在对白下面。",
+      "note_en": "Everyday and commute scenes: bright but quiet enough to sit under dialogue.",
+      "duration": 60,
+      "brief": {
+        "usage": "都市日常段落的背景垫底",
+        "mood": ["轻快", "明亮", "松弛"],
+        "genre": "轻流行",
+        "instruments": ["拨弦吉他", "电钢琴", "轻鼓刷", "贝斯"],
+        "bpm": 104,
+        "structure": "前奏 4 秒进节奏，主题重复两遍，结尾干净收住",
+        "avoid": ["失真吉他", "人声", "重低音"]
+      }
+    },
+    {
+      "id": "suspense_low",
+      "name": "悬疑低频",
+      "english": "Low suspense",
+      "note": "跟踪、发现真相前的铺垫：几乎没有旋律，靠低频与稀疏点缀撑住。",
+      "note_en": "Stalking and pre-reveal beds: almost no melody, held up by low drones and sparse accents.",
+      "duration": 90,
+      "brief": {
+        "usage": "悬疑段落的紧张铺垫",
+        "mood": ["压抑", "不安", "克制"],
+        "genre": "氛围悬疑",
+        "instruments": ["低频持续音", "拨弦低音", "金属摩擦音", "稀疏钢琴单音"],
+        "bpm": 60,
+        "structure": "全程低频不断，每 15 秒出现一次点缀音，末尾突然收干",
+        "avoid": ["旋律主题", "鼓组", "明亮音色"]
+      }
+    },
+    {
+      "id": "warm_piano",
+      "name": "温情钢琴",
+      "english": "Warm piano",
+      "note": "和解、回忆、告别：单钢琴加一层弦乐，留足呼吸。",
+      "note_en": "Reconciliation, memory and farewell: solo piano with one string layer, plenty of air.",
+      "duration": 90,
+      "brief": {
+        "usage": "和解与回忆段落的情绪垫底",
+        "mood": ["温暖", "怀念", "释然"],
+        "genre": "钢琴小品",
+        "instruments": ["三角钢琴", "弦乐衬底", "轻大提琴"],
+        "bpm": 68,
+        "structure": "单钢琴起，第 20 秒加弦乐，最后 6 秒只剩钢琴余音",
+        "avoid": ["鼓组", "电子音色", "夸张转调"]
+      }
+    },
+    {
+      "id": "guzheng_chinese",
+      "name": "国风古筝",
+      "english": "Chinese guzheng",
+      "note": "古装、水墨、national-style 片头：古筝主旋律 + 竹笛点缀。",
+      "note_en": "Period and ink-wash openings: guzheng melody with dizi accents.",
+      "duration": 90,
+      "brief": {
+        "usage": "古装段落与片头的主题",
+        "mood": ["清冷", "悠远", "端庄"],
+        "genre": "国风器乐",
+        "instruments": ["古筝", "竹笛", "琵琶", "鼓点"],
+        "bpm": 84,
+        "structure": "古筝散板 6 秒，进节奏，中段竹笛接旋律，末尾散板收",
+        "avoid": ["西洋铜管", "电子鼓", "人声"]
+      }
+    },
+    {
+      "id": "cyber_electronic",
+      "name": "赛博电子",
+      "english": "Cyber electronic",
+      "note": "科技、追逐、界面演示：合成器分解和弦 + 稳定的四拍。",
+      "note_en": "Tech, chase and UI demos: synth arpeggios over a steady four-on-the-floor.",
+      "duration": 60,
+      "brief": {
+        "usage": "科技感段落与界面演示的背景",
+        "mood": ["冷峻", "推进", "未来感"],
+        "genre": "合成器电子",
+        "instruments": ["合成器分解和弦", "电子鼓机", "低频贝斯", "噪声扫频"],
+        "bpm": 128,
+        "structure": "8 拍扫频进，主题两遍，最后一拍全停",
+        "avoid": ["原声乐器", "人声", "民族音色"]
+      }
+    },
+    {
+      "id": "documentary_strings",
+      "name": "纪录片弦乐",
+      "english": "Documentary strings",
+      "note": "解说、时间线、资料段：弦乐持续铺底，几乎不动，给旁白留全部空间。",
+      "note_en": "Narration and archive segments: sustained strings that barely move, leaving all room to the voice.",
+      "duration": 120,
+      "brief": {
+        "usage": "解说段落的持续铺底",
+        "mood": ["沉静", "客观", "开阔"],
+        "genre": "纪录片配乐",
+        "instruments": ["弦乐持续音", "钢琴单音", "轻定音鼓"],
+        "bpm": 72,
+        "structure": "整段几乎不变，第 40 秒轻微加厚，最后 8 秒渐弱",
+        "avoid": ["强旋律", "鼓组节奏", "情绪爆点"]
+      }
+    },
+    {
+      "id": "comedy_quirky",
+      "name": "喜剧诙谐",
+      "english": "Quirky comedy",
+      "note": "误会、翻车、冷笑话：拨奏加木管，节奏轻轻打绊。",
+      "note_en": "Mix-ups and pratfalls: pizzicato and woodwinds with a slightly tripping rhythm.",
+      "duration": 45,
+      "brief": {
+        "usage": "喜剧段落与翻车瞬间的点缀",
+        "mood": ["俏皮", "轻松", "促狭"],
+        "genre": "诙谐小品",
+        "instruments": ["弦乐拨奏", "单簧管", "木琴", "手拍"],
+        "bpm": 116,
+        "structure": "拨奏起，第 12 秒木管接旋律，结尾一个下滑音收",
+        "avoid": ["严肃弦乐", "低频轰鸣", "人声"]
+      }
+    },
+    {
+      "id": "fashion_beat",
+      "name": "时尚节拍",
+      "english": "Fashion beat",
+      "note": "换装、走位、产品特写：稳定的节拍 + 干净的低频，剪辑点好找。",
+      "note_en": "Outfit changes and product close-ups: a steady beat with clean low end and obvious cut points.",
+      "duration": 60,
+      "brief": {
+        "usage": "换装与产品特写段落的节奏支撑",
+        "mood": ["自信", "干净", "有型"],
+        "genre": "都市节拍",
+        "instruments": ["电子鼓", "低音贝斯", "拨弦合成器", "指响"],
+        "bpm": 100,
+        "structure": "四拍进鼓，每 8 拍一个明显剪辑点，结尾一拍留白",
+        "avoid": ["复杂旋律", "人声", "环境噪声"]
+      }
+    }
+  ]
+}

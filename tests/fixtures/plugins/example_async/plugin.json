@@ -1,0 +1,13 @@
+{
+  "name": "example_async",
+  "version": "0.1.0",
+  "api": 1,
+  "provides": {
+    "adapters": {
+      "image": ["example_async_images"],
+      "video": ["example_async_video"],
+      "music": ["example_async_music"]
+    },
+    "prefixes": ["exasync-img:", "exasync-vid:", "exasync-mus:"]
+  }
+}

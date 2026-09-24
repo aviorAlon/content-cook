@@ -1,0 +1,1502 @@
+{
+  "_note": "公共镜头语言库：单镜运镜分运动 24 / 情绪 20 / 动作 16 三类，外加 8 个手机与第一人称镜位；镜内组合 5 个、跨镜头组 7 个。每个镜头的 risk 都是 inferred（按已知失败模式推断），没有一个是逐镜实测。_evidence 证明的是「声明镜头语言」这件事有效，不证明单个运镜可靠。",
+  "_basis": "条目文字（名称、说明、中英提示词短语、function 标签）由本仓库按通用的镜头术语和拍摄常识自写（条目 id、运动 24 / 情绪 20 / 动作 16 的三类划分与运动类的通用术语名沿用早期整理的一份网上流传的运镜术语表）；risk：本仓库按已知失败模式推断；profiles：按参考作品的公认风格人工设定，未做逐镜分析",
+  "_confidence": "声明层级：有回溯实测（见 _evidence）；单个运镜的 risk：低（全部 inferred）；profiles：低；legacy_profiles：中（旧版本沿用）",
+  "_evidence": {
+    "_note": "早期样本的回溯测量：对 66 个已生成镜次做离线分析，零生成成本，不调付费接口。",
+    "metric": "border/center 比值——边框带帧间漂移 ÷ 中心区帧间漂移。分子分母同随画面内容涨落，因此跨剧集可比；锁死机位时人在动而外圈不变，相机一动则外圈同步变。",
+    "measured": {
+      "声明层级有效": {
+        "static": {
+          "n": 34,
+          "ratio_mean": 0.53,
+          "ratio_median": 0.5
+        },
+        "move": {
+          "n": 23,
+          "ratio_mean": 0.68,
+          "ratio_median": 0.77
+        },
+        "none": {
+          "n": 9,
+          "ratio_mean": 0.87,
+          "ratio_median": 0.88
+        },
+        "结论": "单调分离，声明确实起作用。"
+      },
+      "不声明最失控": "『不写镜头语言』(0.87) 比『明确要求运镜』(0.68) 的相机动得更多。模型默认大幅运镜——**留白不等于稳定，等于放任**。",
+      "static 不是绝对的": "声明 static 的 34 镜 ratio 区间 0.17–1.38，方差极大。最干净的反例是一个主体几乎不动的镜次（center 7.6）却 border 10.5，**边框比中心还动**——写了『camera does NOT move』照样漂。"
+    },
+    "not_measured": "单个运镜的 risk 无法从本语料标定：pan 与 handheld 恒共现（n=10 均值都是 0.56，不可辨识），track n=5，其余 n≤4。因此下方每个镜头的 risk 仍是 inferred，按已知失败模式推断，不是实测。要标定需按运镜逐个跑生成探针。"
+  },
+  "_usage": "prompts.py 按 shot['camera_move'] / shot['camera_combo'] 查表取 prompt 短语；产线用 profile 限定可选集合。表外的镜头不是不好，是与该产线不匹配。profiles 是 2026-09-08 起的 5 条经典产线（按 refs 里电影/短剧/动画/电视剧的公认风格人工设定，refs 是风格参考，不是逐镜分析过的蒸馏来源）；legacy_profiles 是停用的旧档位，只为已有项目兼容保留，界面不列。",
+  "shots": [
+    {
+      "id": "push",
+      "cn": "推镜",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头匀速往前，离人物越来越近",
+      "prompt_en": "the camera travels forward toward the character at an even pace",
+      "function": [
+        "把注意力收到一个人身上",
+        "关键台词说出口时"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "pull",
+      "cn": "拉镜",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头匀速往后退，人物四周的东西慢慢进了画面",
+      "prompt_en": "the camera backs away at an even pace, and what surrounds the character gradually enters the frame",
+      "function": [
+        "让环境进来、人物变小",
+        "交代人物身在何处"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "pan",
+      "cn": "摇镜",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "机位不挪，镜头原地左右转，从一边看到另一边",
+      "prompt_en": "the camera turns left or right on the spot, from one side of the scene to the other",
+      "function": [
+        "从一处转到另一处",
+        "把两个人连起来"
+      ],
+      "risk": "mid",
+      "note": "不写幅度时常被拍成大幅推近，幅度要写明"
+    },
+    {
+      "id": "tilt",
+      "cn": "俯仰镜头",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "机位不挪，镜头原地往上抬或往下低",
+      "prompt_en": "from a fixed spot, the camera angles upward or downward",
+      "function": [
+        "上下扫过一个人或物",
+        "露出高处或低处的东西"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "truck",
+      "cn": "移镜",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "整台机器往旁边平着滑，人物一直在画面里",
+      "prompt_en": "the whole camera glides to one side, the character never leaving the frame",
+      "function": [
+        "和走路的人并排走",
+        "横向扫过一排东西"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "follow",
+      "cn": "跟镜",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "人走到哪镜头跟到哪，彼此的距离不变",
+      "prompt_en": "wherever the character goes the camera goes too, staying the same distance away",
+      "function": [
+        "从背后跟住一个人",
+        "一路走一路说"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "crane",
+      "cn": "升降镜头",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "整台机器被抬高或放低，画面的高度跟着变",
+      "prompt_en": "the whole camera is lifted or lowered, changing the height of the view",
+      "function": [
+        "换一个高度看场面",
+        "从人群里升上去"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "orbit",
+      "cn": "环绕镜头",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头绕着人物走一段弧，人物始终在画面中间",
+      "prompt_en": "the camera travels along an arc around the character, keeping them in the middle of the frame",
+      "function": [
+        "围着一个人转",
+        "让人物从背景里跳出来"
+      ],
+      "risk": "high",
+      "note": "人物转过去再转回来时容易换脸，身份漂移高发"
+    },
+    {
+      "id": "zoom",
+      "cn": "变焦镜头",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "机位不动，只改变焦距把画面放大或缩小",
+      "prompt_en": "the lens zooms in or out while the camera stays put",
+      "function": [
+        "机位不动改变远近",
+        "远处的东西突然被看清"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "handheld",
+      "cn": "手持镜头",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "像有人扛着机器站在现场，画面有轻微的、不规则的起伏",
+      "prompt_en": "as if someone is holding the camera on their shoulder in the room, the frame drifting a little and never quite still",
+      "function": [
+        "画面带着呼吸般的晃动",
+        "像旁观者就在现场"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "aerial",
+      "cn": "航拍镜头",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "从很高的空中往下看，整片地方和里面的路、房子都看得清",
+      "prompt_en": "seen from far up in the air, the whole area laid out below with its roads and buildings",
+      "function": [
+        "从天上看地形",
+        "城市或山野的大全景"
+      ],
+      "risk": "mid",
+      "note": "画面里没有人脸，反而不容易出错"
+    },
+    {
+      "id": "whip",
+      "cn": "甩镜",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头快速甩向一侧，画面拖出动态模糊",
+      "prompt_en": "a fast whip pan that smears the frame with motion blur",
+      "function": [
+        "一下子甩到另一边",
+        "快节奏换场"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "slider",
+      "cn": "滑轨镜头",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头在一条短轨上匀速滑过去，一点不抖",
+      "prompt_en": "the camera slides along a short rail at an even speed without any shake",
+      "function": [
+        "缓慢平稳地滑过",
+        "桌面、货架这类陈列"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "gimbal",
+      "cn": "稳定器跟拍",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头装在稳定器上跟着人物走，走得再快画面也是平的",
+      "prompt_en": "the camera rides a stabiliser behind the character, the picture level however fast they walk",
+      "function": [
+        "稳稳地跟人走",
+        "一口气走过几个房间"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "ramp",
+      "cn": "变速运镜",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "同一个运镜里速度突然变了：本来很慢，一下子快起来，或者反过来",
+      "prompt_en": "the speed of the move changes suddenly within the shot: slow then fast, or fast then slow",
+      "function": [
+        "一镜里快慢变化",
+        "出手那一下放慢"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "fg_wipe",
+      "cn": "前景遮挡运镜",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头一移，近处的柱子、树干或路过的人从画面前扫过去",
+      "prompt_en": "as the camera moves, something close to the lens, such as a pillar or a passer-by, sweeps across the frame",
+      "function": [
+        "前景划过带出层次",
+        "借遮挡接到下一镜"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "through",
+      "cn": "穿越运镜",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头穿过一道窄口，从这一侧进到另一侧的空间",
+      "prompt_en": "the camera passes through a narrow opening from one space into the next",
+      "function": [
+        "从窄口穿过去",
+        "从屋外进到屋里"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "low_push",
+      "cn": "低机位推进",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头放得很低，差不多贴着地，慢慢往前",
+      "prompt_en": "the camera moves forward from very low, nearly touching the floor",
+      "function": [
+        "贴着地面往前",
+        "让走来的人显得高大"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "high_down",
+      "cn": "高机位俯拍",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头架得比人高，斜着往下拍",
+      "prompt_en": "the camera sits higher than the characters and shoots down at an angle",
+      "function": [
+        "从高处往下看",
+        "看清人物站位"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "pov",
+      "cn": "主观镜头",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头就是角色的眼睛，随他移动",
+      "prompt_en": "the camera is the character's eyes and moves as they move",
+      "function": [
+        "观众看到角色看到的",
+        "找东西、翻东西"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "oner",
+      "cn": "长镜头调度",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "一镜到底，人物在镜头前完成几次走位",
+      "prompt_en": "one take with no cuts while the actors move to several different spots",
+      "function": [
+        "不剪、一口气拍完",
+        "几个人轮流进出画面"
+      ],
+      "risk": "high",
+      "note": "超过 10 秒基本会散掉"
+    },
+    {
+      "id": "dutch",
+      "cn": "倾斜镜头",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "画面整体歪斜，地平线不水平",
+      "prompt_en": "a canted frame with the horizon off level",
+      "function": [
+        "画面歪着",
+        "人物状态不对劲"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "crash_zoom",
+      "cn": "快速推进变焦",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头往前冲的同时猛地变焦，一下子砸到人物身上",
+      "prompt_en": "the camera lunges forward and zooms hard at the same moment, slamming onto the character",
+      "function": [
+        "一下子冲到脸上",
+        "反转那一拍"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "detach",
+      "cn": "抽离镜头",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头不再看人物，慢慢飘远，人还留在原地",
+      "prompt_en": "the camera loses interest in the character and floats away, leaving them where they are",
+      "function": [
+        "镜头慢慢走远",
+        "让观众先退出来"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "press_in",
+      "cn": "缓推近脸",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头一点一点往人物脸上靠，最后只剩一张脸",
+      "prompt_en": "the camera creeps toward the character until the face fills the frame",
+      "function": [
+        "一点点贴近脸",
+        "人物在做决定"
+      ],
+      "risk": "mid",
+      "note": "推到近景后脸占的面积变大，长相走样的风险跟着升"
+    },
+    {
+      "id": "pull_away",
+      "cn": "慢拉留人",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "人站着不动，镜头一点点往后退，画面里空出来的地方越来越多",
+      "prompt_en": "the character stands still while the camera eases backward, leaving more and more empty room in the frame",
+      "function": [
+        "人不动、四周变空",
+        "有人刚刚离开"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "vertigo_orbit",
+      "cn": "环绕加变焦",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头绕着人物转半圈，边转边稍微变焦，人物身后的一切都转花了",
+      "prompt_en": "the camera circles halfway round the character with a slight zoom, everything behind them smearing as it turns",
+      "function": [
+        "背景旋转、人在中间",
+        "消息砸下来的那一刻"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "breakdown",
+      "cn": "近身手持",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "手持离人物很近，画面跟着人物一起失去平稳",
+      "prompt_en": "handheld at arm's length from the character, the frame losing its balance along with them",
+      "function": [
+        "镜头贴着人乱晃",
+        "人已经站不稳"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "low_power",
+      "cn": "低角度仰拍",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头放在人物腰部以下往上拍，人显得高，硬光打出清楚的边",
+      "prompt_en": "shot from below the character's waist looking up, so they seem tall, hard light giving them a crisp edge",
+      "function": [
+        "从下往上看人",
+        "让一个人压住画面"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "isolate",
+      "cn": "正上方俯拍",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头架在人物头顶正上方朝下拍，人只占画面中间一小块",
+      "prompt_en": "the camera points straight down from above the character, who takes up only a small patch in the middle of the frame",
+      "function": [
+        "从头顶正上方看",
+        "人被空地包围"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "peek",
+      "cn": "遮挡横移",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "隔着近处一样虚掉的东西横着移，主体只露出一部分",
+      "prompt_en": "moving sideways past something blurred close to the lens, with the subject only partly visible",
+      "function": [
+        "隔着东西看",
+        "观众知道有人在看"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "hold_stare",
+      "cn": "固定长停",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "机位锁死不动，就这样一直看着，戏交给人物自己",
+      "prompt_en": "the camera is locked in place and simply keeps watching, leaving the moment to the actor",
+      "function": [
+        "机位不动、多停几秒",
+        "让表演自己撑住"
+      ],
+      "risk": "low",
+      "note": "最稳，拿不准就先用它"
+    },
+    {
+      "id": "rush_in",
+      "cn": "急推",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头朝人物猛冲过去，几乎一瞬间就到了脸前",
+      "prompt_en": "the camera charges at the character and is at their face almost instantly",
+      "function": [
+        "快速冲向主体",
+        "一句话把人打懵"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "rack",
+      "cn": "前后景移焦",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头不动，清楚的地方从近处的东西换到远处的人（或反过来）",
+      "prompt_en": "the camera holds still while sharp focus shifts from something near to someone far, or the other way round",
+      "function": [
+        "焦点在前后景之间换",
+        "把视线交给另一个人或物"
+      ],
+      "risk": "low",
+      "note": "机位不动也有镜头语言，成本最低"
+    },
+    {
+      "id": "immerse",
+      "cn": "贴身跟拍",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头紧挨着人物往前走，他快镜头就快，他停镜头也停",
+      "prompt_en": "the camera stays right beside the character, speeding up and stopping whenever they do",
+      "function": [
+        "和人物同步走",
+        "观众跟着一起着急"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "dolly_zoom",
+      "cn": "滑动变焦",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头一边移动一边往相反方向变焦：人物在画面里一样大，身后的空间却被拉长或压短",
+      "prompt_en": "the camera moves while zooming the opposite way, so the character keeps the same size as the space behind them stretches or shrinks",
+      "function": [
+        "人不变、背景变形",
+        "意识到出大事"
+      ],
+      "risk": "high",
+      "note": "即希区柯克变焦，视频模型很难做对"
+    },
+    {
+      "id": "silhouette",
+      "cn": "逆光剪影",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "光从人物背后来，脸是黑的，看得出的只有身形",
+      "prompt_en": "the light comes from behind the character; the face is dark and only the shape of the body reads",
+      "function": [
+        "只看轮廓不看脸",
+        "人物站在门口或窗前"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "shot_reverse",
+      "cn": "正反打",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "先拍一个人，再从对面拍另一个人，两人看对方的方向要对得上",
+      "prompt_en": "one person, then the other from the opposite side, each looking in the direction where the other stands",
+      "function": [
+        "两人轮流给镜头",
+        "任何两人对话"
+      ],
+      "risk": "low",
+      "note": "这是跨镜头的剪法，不是镜内运镜——由分镜决定，不写进单镜提示词"
+    },
+    {
+      "id": "macro",
+      "cn": "微距特写",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头贴得极近，只拍一处局部，其余都在画外",
+      "prompt_en": "extremely close on one small detail, with everything else outside the frame",
+      "function": [
+        "只拍一处局部",
+        "让一个小细节变重要"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "tele_detach",
+      "cn": "长焦远观",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "站在很远的地方用长焦拍人物，中间隔着的东西都挤在一起",
+      "prompt_en": "filmed from a long way off on a long lens, everything between camera and character packed together",
+      "function": [
+        "隔得很远地看",
+        "人物淹没在人群里"
+      ],
+      "risk": "low",
+      "note": ""
+    },
+    {
+      "id": "through_barrier",
+      "cn": "穿门推进",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头推着往前，穿过一道门或一层玻璃进到里面",
+      "prompt_en": "the camera pushes on through a door or a pane of glass into the space beyond",
+      "function": [
+        "穿过门或玻璃往前",
+        "闯进不该进的地方"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "slow_reveal",
+      "cn": "慢摇揭示",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头慢慢转过去，原本在画外的东西一件件进了画面",
+      "prompt_en": "the camera turns slowly, bringing things that were off-screen into view one at a time",
+      "function": [
+        "慢慢把画面露出来",
+        "先让观众看到角色没看到的"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "fate_lift",
+      "cn": "升降换局",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头直上或直下，换了高度后，谁高谁低、谁在前谁在后都变了",
+      "prompt_en": "the camera goes straight up or down, and at the new height who stands above, below, in front or behind has changed",
+      "function": [
+        "升起或落下改变构图",
+        "两人地位对调"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "empty_tail",
+      "cn": "人走空镜",
+      "cat": "emotion",
+      "risk_source": "inferred",
+      "prompt_cn": "人走出画面了，镜头不跟，就对着空下来的地方多停一会儿，刚才的声音还没断",
+      "prompt_en": "once the characters walk out, the camera does not follow; it keeps looking at the emptied place while the sound from before lingers",
+      "function": [
+        "人出画后停在空处",
+        "给观众留一口气"
+      ],
+      "risk": "low",
+      "note": "最好用的收尾"
+    },
+    {
+      "id": "arc_in",
+      "cn": "弧线靠近",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头不走直线，而是从侧面兜一个弯接近人物",
+      "prompt_en": "instead of moving straight in, the camera swings round from the side as it closes on the character",
+      "function": [
+        "换个角度走近",
+        "让人物成为焦点"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "flank",
+      "cn": "由背绕前",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "起幅是人物的后脑和肩，镜头绕着走，停在能看清脸的位置",
+      "prompt_en": "starting on the back of the character's head and shoulders, the camera circles until the face comes into view",
+      "function": [
+        "从背影绕到正脸",
+        "先藏后露"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "side_cut",
+      "cn": "画外闯入",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头从旁边猛地插进来，一下子停在人物面前",
+      "prompt_en": "the camera bursts in from the side and stops right in front of the character",
+      "function": [
+        "画外有人闯进来",
+        "打断正在进行的事"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "squeeze",
+      "cn": "长焦慢逼",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "用长焦从远处一点点收紧，画面里留给人物的地方越来越小",
+      "prompt_en": "from far away on a long lens, the frame keeps tightening until the character has almost no space",
+      "function": [
+        "四周空间越来越挤",
+        "一直盯住一个人"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "yield",
+      "cn": "后退让出前景",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头往后撤、从原来的人身边让开，后面的另一个人露了出来",
+      "prompt_en": "the camera draws back and steps aside from the first person, uncovering someone behind them",
+      "function": [
+        "把画面让给后面的人",
+        "换一个主体"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "weave",
+      "cn": "人群穿行",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头绕过一个又一个人往前钻，路线弯弯曲曲",
+      "prompt_en": "the camera threads past one person after another, its path bending as it goes",
+      "function": [
+        "在人群里钻来钻去",
+        "找一个人"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "ground_skim",
+      "cn": "低空前冲",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头离地只有一拳高，飞快往前冲，地面在画面下方刷过去",
+      "prompt_en": "a hand's width off the floor, the camera speeds forward as the ground streaks past below",
+      "function": [
+        "贴地的速度感",
+        "车轮或脚步的高度"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "top_spiral",
+      "cn": "俯拍旋转下落",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "起幅是正上方往下看，镜头边转边往下落，最后平视人物",
+      "prompt_en": "it starts looking straight down, then rotates while dropping until it is level with the character",
+      "function": [
+        "从俯瞰转着落回人物",
+        "大场面收到一个人"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "shadow_follow",
+      "cn": "身后跟拍",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头跟在人物肩膀后面走，只看得到后脑和前面的路",
+      "prompt_en": "the camera walks behind the character's shoulder, seeing only the back of their head and the way ahead",
+      "function": [
+        "跟在身后不见脸",
+        "人物去做见不得人的事"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "hard_stop",
+      "cn": "急停",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头正在动，突然刹住，然后一动不动地对着人物",
+      "prompt_en": "mid-move, the camera brakes hard and then stays perfectly still on the character",
+      "function": [
+        "动着动着一下定住",
+        "一句话落地后"
+      ],
+      "risk": "mid",
+      "note": "放在钩子后面定住，效果很好"
+    },
+    {
+      "id": "pull_reveal",
+      "cn": "急拉见全局",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头猛地往后退，画面从一个小地方一下子放大到整个场面",
+      "prompt_en": "the camera snaps backward off a close detail until the whole situation is in frame",
+      "function": [
+        "从局部拉到全貌",
+        "原来周围早有人"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "ferry",
+      "cn": "两人间来回",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头从一个人移到另一个人，再移回来，两边轮流看",
+      "prompt_en": "the camera travels from one person to the other and back again, taking each in turn",
+      "function": [
+        "在两人之间来回",
+        "对照两个人的反应"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "dive",
+      "cn": "斜着扎下",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头从高处斜着扑下去，一直冲到人物跟前",
+      "prompt_en": "the camera drops at a slant from high up and keeps going until it reaches the character",
+      "function": [
+        "从高处斜着扎进场景",
+        "飞行物的视角"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "corridor",
+      "cn": "沿走廊深入",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头沿着一条长走廊往里走，两边的门一扇扇退到身后",
+      "prompt_en": "the camera heads down a long hallway, door after door slipping by on either side",
+      "function": [
+        "沿着走廊往深处走",
+        "进入陌生的建筑"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "beat_burst",
+      "cn": "踩点冲刺",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "前半段慢，到动作最重的那一下，镜头猛地提速往前",
+      "prompt_en": "slow at first, the camera suddenly speeds forward on the hardest hit of the action",
+      "function": [
+        "踩着重拍往前冲",
+        "音乐起势"
+      ],
+      "risk": "high",
+      "note": ""
+    },
+    {
+      "id": "hover_scan",
+      "cn": "停住打量",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "镜头在人物上方停住，只轻轻转一点角度，像在上下打量",
+      "prompt_en": "the camera pauses above the character and turns only slightly, as if sizing them up",
+      "function": [
+        "停在半空打量一个人",
+        "让人觉得被审视"
+      ],
+      "risk": "mid",
+      "note": ""
+    },
+    {
+      "id": "selfie_arm",
+      "cn": "前置自拍",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "手机前置镜头，手臂长度的近距离自拍，脸微微凑近、略仰视镜头，轻微手臂晃动",
+      "prompt_en": "front phone camera held at arm's length, the face close and slightly below the lens, slight arm sway",
+      "function": [
+        "vlog 开场打招呼",
+        "自言自语反应"
+      ],
+      "risk": "mid",
+      "note": "近距广角会拉变形脸，身份漂移风险来自畸变而非运镜；脸的位置写成物理事实"
+    },
+    {
+      "id": "phone_low_crouch",
+      "cn": "蹲拍低机位",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "蹲下来把手机放低到贴近地面的高度，手持，轻微晃动",
+      "prompt_en": "the phone held low near the ground from a crouch, slight handheld sway",
+      "function": [
+        "贴近地面的主体",
+        "低角度反应镜"
+      ],
+      "risk": "low",
+      "note": "画面里通常没有人脸，最安全的 vlog 镜位"
+    },
+    {
+      "id": "phone_walk",
+      "cn": "边走边拍",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "单手举着手机边走边拍，随步伐轻微起伏，偶尔晃一下",
+      "prompt_en": "phone held in one hand while walking, a gentle walking bob, an occasional wobble",
+      "function": [
+        "边走边说的过场",
+        "街景建置"
+      ],
+      "risk": "mid",
+      "note": "起伏幅度要写「轻微」，不然模型给你拍成跑酷"
+    },
+    {
+      "id": "yank_jolt",
+      "cn": "猛晃甩镜",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "持机的手被猛地一带，手机画面剧烈一晃后甩向事件方向，随即稳住",
+      "prompt_en": "a sudden hard jolt as the phone is jerked aside, the frame lurches then whips toward the event and settles",
+      "function": [
+        "事件发生的信号",
+        "从日常切进冲突"
+      ],
+      "risk": "high",
+      "note": "唯一的突发幅度镜；amplitude=sudden。每集最多用一次，用多了观众晕",
+      "amplitude": "sudden"
+    },
+    {
+      "id": "pov_float",
+      "cn": "第一人称缓行",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "第一人称视角，齐人眼高度，缓慢前移或停住，画面随步子有极轻的起伏",
+      "prompt_en": "a first-person view at eye height, moving forward slowly or pausing, with a faint bob from the steps",
+      "function": [
+        "主视角在屋里走动",
+        "跟着人走"
+      ],
+      "risk": "mid",
+      "note": "起伏写「极轻」，写重了晃得像在跑"
+    },
+    {
+      "id": "pov_punch",
+      "cn": "第一人称急冲",
+      "cat": "action",
+      "risk_source": "inferred",
+      "prompt_cn": "第一人称视角猛地往前一冲、画面一晃，随即稳住",
+      "prompt_en": "the first-person view lunges forward with a hard lurch, then settles",
+      "function": [
+        "突然上前",
+        "从安静切进动作"
+      ],
+      "risk": "high",
+      "note": "amplitude=sudden；每集最多一次。手不入画：只写画面的晃",
+      "amplitude": "sudden"
+    },
+    {
+      "id": "pov_crouch",
+      "cn": "第一人称蹲起",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "第一人称视角先蹲低到地面高度，再慢慢站起来转向目标",
+      "prompt_en": "the first-person view crouches down toward the floor, then slowly rises and turns to the subject",
+      "function": [
+        "捡东西",
+        "蹲下平视低处的人或物"
+      ],
+      "risk": "mid",
+      "note": "两拍动作，写清楚先蹲后起；起身速度写「慢」"
+    },
+    {
+      "id": "pov_look_down",
+      "cn": "第一人称低头",
+      "cat": "motion",
+      "risk_source": "inferred",
+      "prompt_cn": "第一人称视角低头看向画面下方的物件，背景是房间",
+      "prompt_en": "the first-person view tilts down to an object at the bottom of the frame, room in the background",
+      "function": [
+        "看眼前的物件",
+        "看手机（后期屏）"
+      ],
+      "risk": "low",
+      "note": "画面下方 22% 仍要留给字幕，物件别压进这一段"
+    }
+  ],
+  "combos_within_shot": [
+    {
+      "id": "hero_entry",
+      "cn": "低角登场",
+      "parts": [
+        "low_push",
+        "low_power"
+      ],
+      "prompt_cn": "从脚边的高度慢慢往前推，镜头微微朝上，人物显得更高大",
+      "prompt_en": "a slow push from ankle height, tilted slightly up so the figure looks taller",
+      "when": "一个重要的人第一次露面",
+      "risk": "mid"
+    },
+    {
+      "id": "vertigo",
+      "cn": "环绕变焦",
+      "parts": [
+        "orbit",
+        "zoom"
+      ],
+      "prompt_cn": "边绕着人物走弧线边变焦，身后的景跟着转、跟着变形",
+      "prompt_en": "the camera arcs around the character while zooming, the background swinging and warping behind them",
+      "when": "坏消息砸下来、人一下子懵了",
+      "risk": "high"
+    },
+    {
+      "id": "flee",
+      "cn": "手持追跑",
+      "parts": [
+        "handheld",
+        "follow"
+      ],
+      "prompt_cn": "手持跟在奔跑的人后面，脚步一乱画面就乱",
+      "prompt_en": "handheld behind someone running, the frame jolting with every uneven step",
+      "when": "有人在追、有人在跑",
+      "risk": "mid"
+    },
+    {
+      "id": "farewell",
+      "cn": "逆光长停",
+      "parts": [
+        "silhouette",
+        "hold_stare"
+      ],
+      "prompt_cn": "人物背着光只剩轮廓，镜头一动不动地多停一会儿",
+      "prompt_en": "the figure against the light as an outline, the camera perfectly still for a long beat",
+      "when": "最后一次见面、一个人走向结局",
+      "risk": "low"
+    },
+    {
+      "id": "spy",
+      "cn": "隔物偷看",
+      "parts": [
+        "fg_wipe",
+        "peek"
+      ],
+      "prompt_cn": "镜头躲在近处的东西后面横着走，主体时隐时现",
+      "prompt_en": "the camera slides sideways behind something in the foreground, so the subject keeps slipping in and out of view",
+      "when": "有人躲着看，观众知道被看的人不知道",
+      "risk": "mid"
+    }
+  ],
+  "combos_sequence": [
+    {
+      "id": "three_beat",
+      "cn": "三镜递进",
+      "seq": [
+        "全景建置",
+        "中景动作",
+        "特写反应"
+      ],
+      "when": "任何新场景开场——最稳的『电影感』三拍，没有之一"
+    },
+    {
+      "id": "reverse_pair",
+      "cn": "正反打组",
+      "seq": [
+        "A 过肩",
+        "B 过肩",
+        "双人镜"
+      ],
+      "when": "对峙、谈判、审问"
+    },
+    {
+      "id": "reveal_trio",
+      "cn": "揭示三拍",
+      "seq": [
+        "局部微距",
+        "移焦或急拉",
+        "看到全局"
+      ],
+      "when": "真相、陷阱、反转"
+    },
+    {
+      "id": "stop_tail",
+      "cn": "突停收束",
+      "seq": [
+        "运动镜",
+        "急停",
+        "人走空镜"
+      ],
+      "when": "段落收尾、片尾"
+    },
+    {
+      "id": "pressure_ramp",
+      "cn": "压迫升级",
+      "seq": [
+        "平视中景",
+        "低角度仰拍",
+        "微距特写"
+      ],
+      "when": "冲突逐步升级"
+    },
+    {
+      "id": "vlog_open",
+      "cn": "vlog 开场",
+      "seq": [
+        "前置自拍开场白",
+        "翻到后置拍对象",
+        "对象的反应"
+      ],
+      "when": "手机 vlog 的一种开场三拍；「翻转前后置」是剪辑层的切镜，不是镜内运镜，第二拍从后置视角起"
+    },
+    {
+      "id": "flip_pair",
+      "cn": "前后置翻转对",
+      "seq": [
+        "前置：持机人的反应",
+        "后置：反应的对象"
+      ],
+      "when": "vlog 的正反打——不靠过肩，靠翻转前后置摄像头；两镜都是持机人视角，机位天然连续"
+    }
+  ],
+  "profiles": {
+    "classic_film": {
+      "english": "Classic feature film",
+      "用于": "经典电影正剧：横屏 / 克制 / 三拍递进 / 过肩反打 / 剪影",
+      "refs": [
+        "《教父》",
+        "《肖申克的救赎》",
+        "《花样年华》"
+      ],
+      "basis": "按参考作品的公认风格人工设定（2026-09-08），未做逐镜分析",
+      "confidence": "低",
+      "allow": [
+        "push",
+        "pull",
+        "pan",
+        "tilt",
+        "truck",
+        "follow",
+        "crane",
+        "slider",
+        "low_push",
+        "high_down",
+        "press_in",
+        "pull_away",
+        "hold_stare",
+        "rack",
+        "shot_reverse",
+        "slow_reveal",
+        "empty_tail",
+        "silhouette",
+        "macro",
+        "oner"
+      ],
+      "combos": [
+        "hero_entry",
+        "farewell"
+      ],
+      "recommended_sequences": [
+        "three_beat",
+        "reverse_pair",
+        "reveal_trio",
+        "stop_tail"
+      ],
+      "max_moves_per_episode": 4,
+      "why": "经典电影的镜头是「看不见的」：慢推慢拉、过肩反打、逆光剪影，运动都有动机、幅度都小。《教父》的餐桌戏几乎全靠定机位和缓推，《花样年华》靠慢移和人走后的空镜——一集只留 4 个运镜重音，其余镜头锁死机位，让表演和光线说话。"
+    },
+    "short_drama_vertical": {
+      "english": "Vertical short drama",
+      "用于": "竖屏爆款短剧：9:16 / 大脸 / 反应插入 / 快钩子 / 单镜 3—5 秒",
+      "refs": [
+        "《我在八零年代当后妈》",
+        "《无双》",
+        "《闪婚》类竖屏短剧"
+      ],
+      "basis": "按参考作品的公认风格人工设定（2026-09-08），未做逐镜分析",
+      "confidence": "低",
+      "allow": [
+        "press_in",
+        "hold_stare",
+        "shot_reverse",
+        "rack",
+        "macro",
+        "isolate",
+        "pull_away",
+        "empty_tail",
+        "dutch",
+        "handheld",
+        "high_down",
+        "low_power",
+        "crash_zoom",
+        "hard_stop"
+      ],
+      "combos": [
+        "spy",
+        "farewell"
+      ],
+      "recommended_sequences": [
+        "reverse_pair",
+        "pressure_ramp",
+        "stop_tail"
+      ],
+      "max_moves_per_episode": 5,
+      "why": "竖屏短剧的语法是「脸 + 反应 + 反转」：正反打撑对白，表情/道具特写做反应插入，crash_zoom / hard_stop 只留给每集的那一次反转钩子。镜次短、台词密，运镜是重音，一集 5 个足够；剩下的镜头全靠 hold_stare 和景别切换出节奏。"
+    },
+    "anime_action": {
+      "english": "Anime action",
+      "用于": "动画动作番：横屏 / 低机位推进 / 环绕 / 急推变焦 / 变速 / 剪影",
+      "refs": [
+        "《鬼灭之刃》",
+        "《进击的巨人》",
+        "《咒术回战》"
+      ],
+      "basis": "按参考作品的公认风格人工设定（2026-09-08），未做逐镜分析",
+      "confidence": "低",
+      "allow": [
+        "low_push",
+        "orbit",
+        "crash_zoom",
+        "whip",
+        "ramp",
+        "ground_skim",
+        "arc_in",
+        "dive",
+        "top_spiral",
+        "beat_burst",
+        "silhouette",
+        "low_power",
+        "squeeze",
+        "hard_stop",
+        "pull_reveal",
+        "aerial",
+        "dolly_zoom",
+        "rush_in",
+        "flank",
+        "through"
+      ],
+      "combos": [
+        "hero_entry",
+        "vertigo",
+        "flee"
+      ],
+      "recommended_sequences": [
+        "three_beat",
+        "reveal_trio",
+        "pressure_ramp"
+      ],
+      "max_moves_per_episode": 6,
+      "why": "动作番的镜头语言本身就是内容：低角仰拍出场、环绕定格、变速冲刺、剪影收束。这一档开放的高风险镜头最多（orbit / whip / ramp / dolly_zoom 都是身份漂移高发区），所以每镜仍只给一个运镜，一集上限 6——AI 生成里「全都在动」等于「全都在崩」。"
+    },
+    "tv_drama": {
+      "english": "TV series drama",
+      "用于": "电视剧长剧情：横屏 / 稳 / 过肩对话 / 环境建置 / 轻推 / 双人镜",
+      "refs": [
+        "《琅琊榜》",
+        "《甄嬛传》",
+        "《请回答1988》"
+      ],
+      "basis": "按参考作品的公认风格人工设定（2026-09-08），未做逐镜分析",
+      "confidence": "低",
+      "allow": [
+        "push",
+        "pull",
+        "pan",
+        "truck",
+        "slider",
+        "follow",
+        "shot_reverse",
+        "hold_stare",
+        "press_in",
+        "rack",
+        "macro",
+        "empty_tail",
+        "high_down",
+        "slow_reveal",
+        "through",
+        "fg_wipe",
+        "isolate"
+      ],
+      "combos": [
+        "farewell",
+        "spy"
+      ],
+      "recommended_sequences": [
+        "three_beat",
+        "reverse_pair"
+      ],
+      "max_moves_per_episode": 3,
+      "why": "长剧情靠对话和关系推进，镜头要稳：环境建置 → 过肩反打 → 双人镜，运镜只用轻推、慢移和前景遮挡。《琅琊榜》《甄嬛传》几乎不用手持和急推，《请回答1988》靠定机位群像和人走后的空镜。一集 3 个运镜重音足够，多了反而像 MV。"
+    },
+    "suspense_thriller": {
+      "english": "Suspense thriller",
+      "用于": "悬疑惊悚：倾斜 / 手持 / 窥视 / 穿门推进 / 穿堂 / 尾随 / 慢摇揭示",
+      "refs": [
+        "《隐秘的角落》",
+        "《沉默的真相》",
+        "《七宗罪》"
+      ],
+      "basis": "按参考作品的公认风格人工设定（2026-09-08），未做逐镜分析",
+      "confidence": "低",
+      "allow": [
+        "dutch",
+        "handheld",
+        "peek",
+        "through_barrier",
+        "corridor",
+        "shadow_follow",
+        "slow_reveal",
+        "hold_stare",
+        "press_in",
+        "rack",
+        "macro",
+        "tele_detach",
+        "high_down",
+        "low_push",
+        "empty_tail",
+        "hard_stop",
+        "pov",
+        "detach"
+      ],
+      "combos": [
+        "spy",
+        "vertigo"
+      ],
+      "recommended_sequences": [
+        "pressure_ramp",
+        "stop_tail",
+        "three_beat"
+      ],
+      "max_moves_per_episode": 4,
+      "why": "悬疑的镜头语言是「观众比角色知道得多一点、又不够多」：窥视、尾随、穿堂、慢摇揭示制造不安，倾斜和手持只在失衡时刻用。《隐秘的角落》的长焦旁观、《七宗罪》的走廊纵深都是克制的——一集 4 个运镜，其余镜头锁死机位，用光和留白压气氛。"
+    }
+  },
+  "legacy_profiles": {
+    "manhua_dialogue": {
+      "legacy": true,
+      "basis": "旧版本沿用的档位：白名单与上限为兼容已有项目保留，未做逐镜标定",
+      "confidence": "中",
+      "用于": "旧项目兼容：竖屏漫画对白（已不再推荐，新项目用 short_drama_vertical）",
+      "allow": [
+        "hold_stare",
+        "rack",
+        "macro",
+        "press_in",
+        "pull_away",
+        "empty_tail",
+        "low_power",
+        "isolate",
+        "hard_stop"
+      ],
+      "combos": [
+        "farewell"
+      ],
+      "recommended_sequences": [
+        "three_beat",
+        "reverse_pair",
+        "stop_tail"
+      ],
+      "max_moves_per_episode": 3,
+      "why": "镜次短、台词密、身份锁严。运镜是重音，全都重音等于没有重音。"
+    },
+    "wuxia_action": {
+      "legacy": true,
+      "basis": "旧版本沿用的档位：白名单与上限为兼容已有项目保留，未做逐镜标定",
+      "confidence": "中",
+      "用于": "旧项目兼容：横屏武侠/神话动作（已不再推荐，新项目用 anime_action 或 classic_film）",
+      "allow": [
+        "low_push",
+        "crane",
+        "ground_skim",
+        "arc_in",
+        "squeeze",
+        "hard_stop",
+        "pull_reveal",
+        "dive",
+        "silhouette",
+        "low_power",
+        "aerial",
+        "slider",
+        "tele_detach",
+        "hover_scan",
+        "shadow_follow",
+        "top_spiral",
+        "beat_burst"
+      ],
+      "combos": [
+        "hero_entry",
+        "vertigo",
+        "flee",
+        "farewell"
+      ],
+      "recommended_sequences": [
+        "three_beat",
+        "reveal_trio",
+        "pressure_ramp",
+        "stop_tail"
+      ],
+      "max_moves_per_episode": null,
+      "why": "动作戏的镜头语言本身就是内容。每镜可带一个运镜，但仍然一镜只给一个。"
+    },
+    "dark_comedy_vertical": {
+      "legacy": true,
+      "basis": "旧版本沿用的档位：白名单与上限为兼容已有项目保留，未做逐镜标定",
+      "confidence": "中",
+      "用于": "旧项目兼容：竖屏黑色喜剧（已不再推荐，新项目用 short_drama_vertical）",
+      "allow": [
+        "hold_stare",
+        "shot_reverse",
+        "press_in",
+        "isolate",
+        "macro",
+        "rack",
+        "handheld",
+        "pull_away",
+        "empty_tail",
+        "dutch",
+        "high_down",
+        "tele_detach"
+      ],
+      "combos": [
+        "spy"
+      ],
+      "recommended_sequences": [
+        "reverse_pair",
+        "three_beat",
+        "stop_tail",
+        "pressure_ramp"
+      ],
+      "max_moves_per_episode": 6,
+      "why": "16 镜给了做覆盖变化的空间；喜剧靠反打和定格，不靠炫技。"
+    },
+    "vlog_handheld": {
+      "legacy": true,
+      "basis": "旧版本沿用的档位：白名单与上限为兼容已有项目保留，未做逐镜标定",
+      "confidence": "中",
+      "用于": "旧项目兼容：竖屏真人手机 vlog（已不再推荐；库里的 4 个手机持机镜位仍保留）",
+      "allow": [
+        "selfie_arm",
+        "phone_low_crouch",
+        "phone_walk",
+        "yank_jolt",
+        "hold_stare",
+        "rack",
+        "macro",
+        "hard_stop",
+        "empty_tail",
+        "high_down"
+      ],
+      "combos": [
+        "flee"
+      ],
+      "recommended_sequences": [
+        "vlog_open",
+        "flip_pair",
+        "three_beat",
+        "stop_tail",
+        "reveal_trio"
+      ],
+      "max_moves_per_episode": null,
+      "why": "手机 vlog 里手持晃动是基线不是重音，所以不设上限；但每镜仍只给一个持机状态，yank_jolt 每集最多一次。没有 press_in / orbit / crash_zoom——手机 vlog 不存在推轨和环绕，出现了就穿帮。"
+    },
+    "ghost_pov": {
+      "legacy": true,
+      "basis": "旧版本沿用的档位：白名单与上限为兼容已有项目保留，未做逐镜标定",
+      "confidence": "中",
+      "用于": "旧项目兼容：全程第一人称视角的竖屏真人短剧（已不再推荐；库里的 4 个 POV 镜位仍保留）",
+      "allow": [
+        "pov_float",
+        "pov_punch",
+        "pov_crouch",
+        "pov_look_down",
+        "hold_stare",
+        "rack",
+        "macro",
+        "hard_stop",
+        "empty_tail",
+        "high_down"
+      ],
+      "combos": [],
+      "recommended_sequences": [
+        "three_beat",
+        "stop_tail"
+      ],
+      "max_moves_per_episode": null,
+      "why": "镜头就是主视角人物的眼睛，所以没有推轨/环绕/变焦，也没有手机四镜。随步子的轻微起伏是基线不是重音，不设上限；pov_punch 每集最多一次。所有情绪镜默认 hold_stare。"
+    },
+    "static_book": {
+      "legacy": true,
+      "basis": "旧版本沿用的档位：白名单与上限为兼容已有项目保留，未做逐镜标定",
+      "confidence": "中",
+      "用于": "旧项目兼容：绘本静帧 + Ken Burns（绘本走独立模块，这里只为兼容保留）",
+      "allow": [
+        "push",
+        "pull",
+        "truck"
+      ],
+      "combos": [],
+      "max_moves_per_episode": null,
+      "why": "素材是静帧，只有极缓慢的推、拉、移是安全的。"
+    }
+  }
+}

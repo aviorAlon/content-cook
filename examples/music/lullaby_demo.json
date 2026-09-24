@@ -1,0 +1,20 @@
+{
+  "title": "睡前摇篮曲",
+  "brief": {
+    "usage": "绘本睡前朗读的底噪",
+    "mood": ["温柔", "安定", "困倦"],
+    "genre": "摇篮曲",
+    "instruments": ["音乐盒", "轻钢琴", "弦乐衬底"],
+    "bpm": 70,
+    "structure": "前 8 秒渐入，中段平稳，最后 3 秒渐弱到无",
+    "avoid": ["鼓组", "人声", "强节拍"]
+  },
+  "prompt_language": "zh",
+  "duration": 120,
+  "count": 2,
+  "reference_images": [],
+  "music_params": {"model": "@music"},
+  "attempts": [],
+  "current": null,
+  "used_in": []
+}

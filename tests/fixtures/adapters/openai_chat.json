@@ -1,0 +1,26 @@
+{
+  "role": "text",
+  "adapter": "openai_chat",
+  "config": {
+    "api_key": "k",
+    "model": "gpt-x"
+  },
+  "responses": {
+    "chat.completions.create": {
+      "choices": [
+        {
+          "message": {
+            "content": "{\"ok\": true}"
+          }
+        }
+      ],
+      "usage": null,
+      "model": "gpt-x"
+    }
+  },
+  "expect": {
+    "json": {
+      "ok": true
+    }
+  }
+}

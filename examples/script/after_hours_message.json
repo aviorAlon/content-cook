@@ -1,0 +1,73 @@
+{
+  "id": "SC-EXAMPLE-1",
+  "module": "script",
+  "title": "下班后的消息，要不要回",
+  "target": "podcast",
+  "language": "zh",
+  "brief": {
+    "topic": "下班后收到工作消息，回还是不回",
+    "angle": "不站队，两个处境不同的人各讲各的",
+    "audience": "刚工作两三年的人",
+    "materials": "阿杰上周六晚上十点被拉进一个新群，群名叫「明早十点前必须出」，他第二天早上八点半才回；小林那边一共三个人，上个月有一次客户晚上十一点问报价，她隔到早上才答，单子没了。",
+    "tone": "像朋友下班后吐槽",
+    "avoid": ["说教", "编造调查数据"]
+  },
+  "speakers": [
+    {"id": "jie", "name": "阿杰", "persona": "大厂产品经理，说话慢，习惯先停两秒再开口", "stance": "边界感是必须的"},
+    {"id": "lin", "name": "小林", "persona": "三人小公司合伙人，语速快，句子短", "stance": "客户在等就得回"}
+  ],
+  "blocks": [
+    {"id": "B01", "title": "冷开场", "goal": "用一个具体场景把人拽进来，不自我介绍", "note": "从那条消息本身开始，别先讲道理"},
+    {"id": "B02", "title": "各自的处境", "goal": "把两个人为什么不一样说清楚，各自带一件真事", "note": ""},
+    {"id": "B03", "title": "有没有中间地带", "goal": "留一处不和解的分歧，不给结论", "note": "结尾不总结全篇"}
+  ],
+  "versions": [
+    {
+      "id": "V1",
+      "label": "第一版",
+      "source": "hand",
+      "model": "",
+      "backend": "",
+      "note": "示例稿：手写，零告警",
+      "created_at": 1789000000,
+      "from_version": "",
+      "blocks": [
+        {
+          "id": "B01",
+          "lines": [
+            {"who": "jie", "text": "上周六晚上十点出头，我被拉进一个新群，群名叫「明早十点前必须出」。", "cue": "", "kind": "talk"},
+            {"who": "lin", "text": "嗯，然后呢？", "cue": "", "kind": "talk"},
+            {"who": "jie", "text": "我盯着那条消息看了大概两分钟，把手机扣在桌上了。", "cue": "停顿", "kind": "talk"},
+            {"who": "jie", "text": "第二天早上八点半才回。", "cue": "", "kind": "talk"},
+            {"who": "lin", "text": "我要是你，那天晚上就回了。", "cue": "", "kind": "talk"},
+            {"who": "lin", "text": "不是我勤快，是我那边一共三个人。", "cue": "", "kind": "talk"}
+          ]
+        },
+        {
+          "id": "B02",
+          "lines": [
+            {"who": "jie", "text": "我这边不一样，我们组十几个人，晚上回消息只会让明天的会开得更早。", "cue": "", "kind": "talk"},
+            {"who": "lin", "text": "可是你那套在我这儿行不通。", "cue": "", "kind": "talk"},
+            {"who": "lin", "text": "上个月有一次，客户夜里问一个报价，我隔到早上才答，单子就没了。", "cue": "", "kind": "talk"},
+            {"who": "jie", "text": "那是你把自己变成了唯一的出口，对吧。", "cue": "", "kind": "talk"},
+            {"who": "jie", "text": "换个人也能答，你就不用醒着。", "cue": "", "kind": "talk"},
+            {"who": "lin", "text": "理论上是。现在还没有那个人。", "cue": "轻笑", "kind": "talk"}
+          ]
+        },
+        {
+          "id": "B03",
+          "lines": [
+            {"who": "jie", "text": "我不觉得这是勤快和懒的区别。", "cue": "", "kind": "talk"},
+            {"who": "lin", "text": "我也没说你懒。", "cue": "打断", "kind": "talk"},
+            {"who": "lin", "text": "我说的是我没得选。", "cue": "", "kind": "talk"},
+            {"who": "jie", "text": "那就把没得选说出来，别让它假装是自愿的。", "cue": "", "kind": "talk"},
+            {"who": "lin", "text": "这句我记得，回头贴我们群里。", "cue": "", "kind": "talk"},
+            {"who": "jie", "text": "贴了也不一定改。", "cue": "", "kind": "talk"}
+          ]
+        }
+      ]
+    }
+  ],
+  "current": "V1",
+  "used_in": []
+}

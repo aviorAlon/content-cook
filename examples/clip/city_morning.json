@@ -1,0 +1,39 @@
+{
+  "title": "城市清晨 · 30 秒示例短片",
+  "prompt_language": "zh",
+  "style": "custom",
+  "style_anchor": "清冷写实的城市纪录片质感，像一段从天亮拍到热闹的长镜头：潮湿的柏油路、铁皮卷帘门、蒸笼白汽、电车架空线",
+  "dialect": "auto",
+  "global": {
+    "look": "画面的变化来自街上的人和光一点点变多；玻璃与金属表面挂着细密的晨露，墙面与招牌保留风化的旧痕",
+    "palette": ["雾蓝", "青灰", "米白", "砖红", "暖橙", "铜金"],
+    "light": "日出前后的斜射晨光，街面浮着一层薄雾，第一缕阳光从两栋楼之间切进来",
+    "aspect_ratio": "16:9",
+    "safe_area": "行人和关键动作尽量落在画面中部，四周留出余量，街景向左右自然延伸",
+    "text_policy": "画面上的字只来自街景本身：店招、站牌、手写小黑板上的几个英文短词；不叠字幕，也不出现真实品牌",
+    "audio": "街道环境声打底，一段轻柔的钢琴贯穿全片；21 秒起加入轻快的手鼓，不配人声"
+  },
+  "beats": [
+    {"id": "B01", "start": 0, "end": 3, "shot": "航拍大远景", "picture": "薄雾里的城市天际线，楼顶水箱与天线连成剪影，天边透出一线暖橙", "sound": "远处一声汽笛", "text": "GOOD MORNING"},
+    {"id": "B02", "start": 3, "end": 6, "shot": "中远景", "picture": "空荡的十字路口，路灯一盏接一盏熄灭，湿漉漉的斑马线映着天光", "sound": "路灯继电器轻响", "text": ""},
+    {"id": "B03", "start": 6, "end": 9, "shot": "近景", "picture": "早点铺的铁皮卷帘门被拉起一半，门后的蒸笼冒出成团白汽", "sound": "卷帘门哗啦一声", "text": "OPEN"},
+    {"id": "B04", "start": 9, "end": 12, "shot": "中景横移", "picture": "白汽散开，老板把一笼包子端上门口的折叠桌", "sound": "蒸笼盖轻碰", "text": ""},
+    {"id": "B05", "start": 12, "end": 15, "shot": "中景", "picture": "沿街的骑车人一辆接一辆驶过镜头，车筐里放着公文包和青菜", "sound": "车铃此起彼伏", "text": ""},
+    {"id": "B06", "start": 15, "end": 18, "shot": "低角度近景", "picture": "电车的受电弓擦过架空线，迸出一点蓝色火花，红白车身从画面前掠过", "sound": "电车铃叮当两声", "text": "LINE 3"},
+    {"id": "B07", "start": 18, "end": 21, "shot": "车窗内近景", "picture": "起雾的车窗被一根手指抹开一道，窗外的街景在晨光里流动", "sound": "车厢轻晃", "text": ""},
+    {"id": "B08", "start": 21, "end": 24, "shot": "俯拍中景", "picture": "公园广场上晨练的老人同时抬起手臂，一排红色扇面齐齐展开", "sound": "扇面展开的脆响", "text": ""},
+    {"id": "B09", "start": 24, "end": 27, "shot": "中景", "picture": "花店店员把一桶向日葵搬上门口台阶，阳光正好落在花盘上", "sound": "铁桶落在石阶上", "text": ""},
+    {"id": "B10", "start": 27, "end": 30, "shot": "极远景", "picture": "雾气散尽，整条街道在阳光里热闹起来，行人、单车与电车在同一个画面里交错", "sound": "钢琴和弦慢慢收住", "text": "HELLO CITY"}
+  ],
+  "continuity": {
+    "one_take": true,
+    "transitions": "每次换景都借前景里经过的东西带过去：一团白汽、一辆驶过的车、一扇起雾的车窗",
+    "last_frame": "停在整条街被阳光照亮的全景上，画面中央是交错的行人与电车",
+    "forbid": ["真实品牌的标识", "夜景霓虹", "雨天", "延时摄影式的快进", "拥挤踩踏", "车辆碰撞"]
+  },
+  "video_params": {"model": "@video", "duration": 30, "resolution": "1080p", "generate_audio": false},
+  "image_params": {"model": "@image", "image_size": "2K"},
+  "first_frame": {"mode": "none", "asset": null, "prompt": ""},
+  "attempts": [],
+  "current": null
+}

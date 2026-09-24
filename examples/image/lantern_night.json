@@ -1,0 +1,22 @@
+{
+  "title": "河灯夜（示例）",
+  "template": "freeform",
+  "subject": {
+    "kind": "character",
+    "name": "",
+    "block": "",
+    "assets": [],
+    "fidelity": 85
+  },
+  "style": "cinematic_key_art",
+  "options": {
+    "brief": "夜里的石桥下，一个人蹲在水边放一盏纸河灯，灯里是暖黄烛光 #F3C77B，水面把灯影拉成一条长线，远处的青瓦屋檐只剩轮廓",
+    "variants": 4,
+    "aspect": "3:4",
+    "negative": ""
+  },
+  "image_params": {
+    "model": "@image",
+    "image_size": "2K"
+  }
+}

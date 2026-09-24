@@ -1,0 +1,14 @@
+{
+  "_comment": "图生图：多一条 image 映射（输入图），没有 width/height——尺寸跟着输入图走，缺的映射适配器会跳过。",
+  "task": "image",
+  "title": "SDXL 图生图（带参考图）",
+  "prompt": ["6", "inputs", "text"],
+  "negative": ["7", "inputs", "text"],
+  "seed": ["3", "inputs", "seed"],
+  "steps": ["3", "inputs", "steps"],
+  "cfg": ["3", "inputs", "cfg"],
+  "denoise": ["3", "inputs", "denoise"],
+  "model": ["4", "inputs", "ckpt_name"],
+  "image": ["10", "inputs", "image"],
+  "output": "9"
+}

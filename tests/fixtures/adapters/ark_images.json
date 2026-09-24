@@ -1,0 +1,26 @@
+{
+  "role": "image",
+  "adapter": "ark_images",
+  "config": {
+    "api_key": "k",
+    "model": "doubao-seedream-4-0-250828"
+  },
+  "responses": {
+    "images.generate": {
+      "data": [
+        {
+          "b64_json": "$PNG_B64",
+          "url": null
+        }
+      ]
+    }
+  },
+  "expect": {
+    "submit_status": "FINISHED",
+    "task_id_prefix": "file:",
+    "payload_contains": [
+      "1440x2560",
+      "data:image/png;base64"
+    ]
+  }
+}

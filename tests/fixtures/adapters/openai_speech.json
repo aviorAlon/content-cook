@@ -1,0 +1,15 @@
+{
+  "role": "voice",
+  "adapter": "openai_speech",
+  "config": {
+    "api_key": "k",
+    "model": "gpt-4o-mini-tts",
+    "voice": "alloy"
+  },
+  "responses": {
+    "audio.speech.create": {
+      "content": "$BYTES:MP3DATA"
+    }
+  },
+  "expect": {}
+}

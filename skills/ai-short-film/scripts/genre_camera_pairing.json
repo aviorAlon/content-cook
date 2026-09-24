@@ -1,0 +1,71 @@
+{
+  "_meta": {
+    "version": 1,
+    "basis": "搭配是本仓库人工设定（2026-09-11）；why 里对题材的概括摘自 zenstory-ai/drama-skills 题材卡原句（MIT，见 docs/third-party-notices.md）",
+    "note": "题材卡 × 镜头风格的搭配提示：recommended 是常配的档，avoid 只放真正会打架的组合（少用），why 一句话讲清理由。依据是题材卡自己的 core / pressure / grains / production_notes 与各档 profile 的 why，没有成片对比。只做提示：lint 只在 avoid 时给软告警，界面只在选中两者时给一行，不拦截、不进提示词。",
+    "genre_cards": "genre_cards.json 的 cards[].id",
+    "camera_profiles": "camera_library.json 的 profiles 键"
+  },
+  "pairings": {
+    "qinzi-yinmi": {
+      "recommended": ["short_drama_vertical", "tv_drama"],
+      "avoid": ["anime_action"],
+      "why": "戏在孩子一句话把大人逼到表态，要靠正反打、反应插入和画、录音这类物件特写落地；动作番的环绕、甩镜、变速把家事拍成对决，孩子入画时转身换脸的风险也最高"
+    },
+    "xianxia-xiuzhen": {
+      "recommended": ["anime_action", "classic_film"],
+      "avoid": [],
+      "why": "力量差要落到位置、界线和旁人退让的距离上，动作番的低机位出场、剪影、急推适合少数几次高价值出手，经典电影的克制调度适合其余靠余波承载的场次"
+    },
+    "dongzuo-renwu": {
+      "recommended": ["anime_action", "classic_film"],
+      "avoid": [],
+      "why": "看点是越收越窄的路径和损耗而不是动作幅度，动作番的低空前冲、急停、急拉见全局留给少数几场追逃，经典电影的克制调度守住每镜一个起止状态和轴线"
+    },
+    "guzhuang-quanmou": {
+      "recommended": ["tv_drama", "classic_film"],
+      "avoid": [],
+      "why": "权力靠座次、站位、文书和通传这些规矩里的位置说话，电视剧档的过肩对质、定机位群像和经典电影的慢推最能让这一格的移动看得清"
+    },
+    "fuchou-dalian": {
+      "recommended": ["short_drama_vertical"],
+      "avoid": [],
+      "why": "每次翻盘要让观众当场看清对手失去了什么，竖屏短剧的正反打、目击者反应插入和每集一次的急推或突停正好承载证据亮出与地位反转"
+    },
+    "jiating-guanxi": {
+      "recommended": ["tv_drama", "short_drama_vertical"],
+      "avoid": ["anime_action"],
+      "why": "少数几个日常空间里靠饭桌位置、门的开合和表演承载变化，要稳的双人镜和定机位；动作番的环绕、甩镜、变速会把家事拍成对决，表演反被运镜盖住"
+    },
+    "xuanyi-guize": {
+      "recommended": ["suspense_thriller"],
+      "avoid": [],
+      "why": "恐惧来自可验证的限制，观众也在推理，悬疑档的窥视、尾随、穿堂和慢摇揭示能让线索先被观众看见"
+    },
+    "shenghuo-liu": {
+      "recommended": ["tv_drama", "classic_film"],
+      "avoid": ["short_drama_vertical", "anime_action"],
+      "why": "小事靠物件状态和距离慢慢改变，要稳的定机位、慢移和人走后的空镜；题材卡明说不用密集大特写和群体震惊提速，竖屏短剧的大脸反应、急推突停和动作番的高速运镜都会把日常硬提成爆点"
+    },
+    "pojing-chongyuan": {
+      "recommended": ["tv_drama", "short_drama_vertical"],
+      "avoid": [],
+      "why": "情绪货币是证明不是甜，电视剧档的前后景移焦、人走后的空镜和竖屏短剧的缓推近脸、微距特写都能让当下的一件信物承担回忆"
+    },
+    "zhichang-xiju": {
+      "recommended": ["short_drama_vertical", "tv_drama"],
+      "avoid": ["suspense_thriller"],
+      "why": "笑点来自机构慌乱与个人克制的落差，要靠正反打、定格反应和第三方核对时清楚可读的画面；悬疑档的倾斜、手持、窥视和慢摇揭示会把办公室拍成惊悚，落差就没了"
+    },
+    "haomen-hunlian": {
+      "recommended": ["short_drama_vertical", "tv_drama"],
+      "avoid": [],
+      "why": "戏在谁能决定另一个人的生活，靠少数高辨识度空间里的光线和人物位置变化，竖屏短剧的正反打、反应插入和电视剧档的双人镜最能把这条不对等线拍清楚"
+    },
+    "shenfen-cuowei": {
+      "recommended": ["short_drama_vertical", "tv_drama"],
+      "avoid": ["anime_action"],
+      "why": "观众要一直分得清画面上的人此刻占着哪个身份，要靠镜子、证件特写和稳的双人镜；动作番的环绕、包抄、甩镜正是转身换脸的高发区，身份一漂就分不清是谁"
+    }
+  }
+}

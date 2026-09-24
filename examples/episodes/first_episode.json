@@ -1,0 +1,213 @@
+{
+  "id": "FIRST-EPISODE",
+  "output_root": "output/story_video/FIRST-EPISODE",
+  "title_zh": "加班夜的许愿",
+  "title_en": "A Wish at Midnight",
+  "logline": "深夜加班的林小满对着桌上的招财猫许愿涨工资，招财猫真的开口了——结果只帮她涨了三块五。",
+  "camera_profile": "short_drama_vertical",
+  "prompt_language": "zh",
+  "dialogue_prompt": "auto",
+  "performance_lock": true,
+  "frame_style": "原创中式风格化 3D 动画，黑色幽默基调，竖屏 9:16。超清源图，讨喜且有表现力的东亚角色建模。材质：棉质工装、亚克力招财猫、磨砂键盘、玻璃幕墙。调色：深夜办公室，冷白荧光灯配显示器的蓝光，招财猫处一点暖金。cinematic PBR，controlled depth of field。基调：一本正经地讨价还价，越认真越好笑。绝不是廉价手游渲染、绝不是照片级写实诡异感、不是扁平 2D、不是日系动漫。",
+  "scene_anchor": "固定环境：写字楼开放办公区靠窗的一张工位，深夜，其他工位全黑。画面左侧是林小满的座椅与显示器，右侧显示器旁摆着一只巴掌大的金色招财猫，招财猫始终在她右手边、显示器右侧，每一镜保持一致。画面下方留白 24% 作为字幕安全区。人脸、手和主要动作保持在画面高度 12%-72% 区间内。无可读文字、无 logo、无水印。只有 cast 里点名的角色能出现，禁止任何额外路人。",
+  "camera": "竖屏 9:16，单机位为主，机位在工位正前方略偏右，稳定；只用允许的运镜，不用手持晃动。",
+  "neg": "可读文字, 字幕, 水印, logo, 多余人物, 六指, 畸形手, 模糊, 恐怖感",
+  "video_lock": " 场景、光线、道具位置与首帧完全一致。",
+  "video_tail_lock": " 每镜只有一个主导动作，动作幅度适中，不切镜。",
+  "image_params": {
+    "model": "@image",
+    "aspect_ratio": "9:16",
+    "image_size": "2K"
+  },
+  "video_params": {
+    "model": "@video",
+    "prompt_dialect": "auto",
+    "resolution": "1080p",
+    "aspect_ratio": "9:16",
+    "generate_audio": true
+  },
+  "subtitle": {
+    "language": "zh",
+    "position": "bottom",
+    "display": "speech",
+    "chinese_font_size": 46,
+    "chinese_color": "0xFFFFFF",
+    "outline_color": "0x111111",
+    "outline_width": 4,
+    "band_alpha": 0.22,
+    "max_lines": 2,
+    "safe_bottom_percent": 7,
+    "render_mode": "programmatic_only"
+  },
+  "delivery": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 24,
+    "crossfade_seconds": 0.25
+  },
+  "cast": {
+    "lin": {
+      "name": "林小满",
+      "voice": "二十六七岁的女声，音量正常，语速中等，口齿清楚",
+      "block": "林小满：二十六七岁，齐肩黑发扎成低马尾，圆框眼镜，米白色棉质工装外套，里面是浅灰 T 恤，左手腕戴一块黑色电子表。"
+    },
+    "cat": {
+      "name": "招财猫",
+      "voice": "略带电子感的中性声，音量正常，语速偏慢，口齿清楚",
+      "block": "招财猫：巴掌大的金色亚克力招财猫摆件，右前爪抬起，胸前挂一枚红色小铃铛，眼睛是两粒黑色圆珠。"
+    },
+    "office": {
+      "block": "办公区·深夜：靠窗工位，显示器亮着蓝光，键盘、一杯喝了一半的奶茶、一摞文件；窗外是别的写字楼零星的灯。"
+    }
+  },
+  "shots": [
+    {
+      "id": "S1_OVERTIME",
+      "dur": 6,
+      "cast": [
+        "office",
+        "lin",
+        "cat"
+      ],
+      "shot": "中景，平视，正面略偏右，工位与显示器、招财猫都在画面里",
+      "art": "林小满弯着腰敲键盘，显示器蓝光打在她镜片上，招财猫在显示器右侧安静地举着爪子。",
+      "motion": "唯一动作：她停下敲键盘，缓缓靠回椅背，抬头看向天花板。",
+      "camera_move": "hold_stare",
+      "sfx": "键盘敲击声停下，空调低鸣",
+      "lines": [],
+      "exit_state": "她靠在椅背上仰着头，双手垂在扶手上；招财猫在显示器右侧举爪不动。"
+    },
+    {
+      "id": "S2_WISH",
+      "dur": 7,
+      "cast": [
+        "office",
+        "lin",
+        "cat"
+      ],
+      "shot": "近景，机位略压低，她的脸与右侧的招财猫同框",
+      "art": "她转头面对招财猫，双手合十举到下巴前，镜片上仍有蓝光反射。",
+      "motion": "唯一动作：她双手合十、闭眼，对着招财猫说出许愿的话。",
+      "camera_move": "press_in",
+      "sfx": "安静，只有空调声",
+      "ref_frame": "S1_OVERTIME",
+      "entry_state": "她已从椅背上坐直，身体转向右侧的招财猫，双手正举到下巴前。",
+      "lines": [
+        {
+          "who": "lin",
+          "zh": "招财猫大人，求你了，让我下个月涨点工资吧。",
+          "tone": "认真、诚恳，语速中等，音量正常，口齿清楚"
+        }
+      ],
+      "exit_state": "她双手合十闭着眼，脸朝招财猫；招财猫举爪不动。"
+    },
+    {
+      "id": "S3_CAT_SPEAKS",
+      "dur": 6,
+      "cast": [
+        "office",
+        "cat"
+      ],
+      "shot": "特写，平视，招财猫占满画面中部，背景是失焦的显示器蓝光",
+      "art": "金色招财猫正对镜头，胸前红铃铛微微发亮。",
+      "motion": "唯一动作：招财猫的举起的爪子缓缓放下又抬起一次，铃铛轻晃，同时开口说话。",
+      "camera_move": "macro",
+      "sfx": "铃铛轻响一声",
+      "ref_frame": "S2_WISH",
+      "entry_state": "招财猫仍在显示器右侧原位，铃铛刚开始发亮。",
+      "lines": [
+        {
+          "who": "cat",
+          "zh": "可以，但是要看你的绩效。",
+          "tone": "平稳、一本正经，语速偏慢，音量正常，口齿清楚"
+        }
+      ],
+      "exit_state": "招财猫爪子回到举起的位置，铃铛还亮着。"
+    },
+    {
+      "id": "S4_REACT",
+      "dur": 6,
+      "cast": [
+        "office",
+        "lin",
+        "cat"
+      ],
+      "shot": "近景，平视，回到她的脸，招财猫在画面右下角入镜一角",
+      "art": "她睁开眼，嘴微张，眼镜滑到鼻梁中间。",
+      "motion": "唯一动作：她慢慢把眼镜推回去，盯着招财猫，然后说话。",
+      "camera_move": "rack",
+      "sfx": "椅子轻响",
+      "ref_frame": "S2_WISH",
+      "entry_state": "她刚睁开眼，双手还停在下巴前，招财猫铃铛的亮光已经熄灭。",
+      "lines": [
+        {
+          "who": "lin",
+          "zh": "你居然会说话？那你倒是说个数啊。",
+          "tone": "惊讶转为较真，语速稍快，音量正常，口齿清楚"
+        }
+      ],
+      "exit_state": "她双手放在桌沿，身体前倾盯着招财猫。"
+    },
+    {
+      "id": "S5_PUNCHLINE",
+      "dur": 7,
+      "cast": [
+        "office",
+        "lin",
+        "cat"
+      ],
+      "shot": "中景，平视，回到第一镜的机位，工位全貌与招财猫同框",
+      "art": "她前倾盯着招财猫，手机放在键盘旁，屏幕朝上。",
+      "motion": "唯一动作：她拿起手机看了一眼，然后慢慢放下，看向招财猫。",
+      "camera_move": "pull_away",
+      "sfx": "手机提示音一声",
+      "ref_frame": "S1_OVERTIME",
+      "entry_state": "她身体前倾坐在工位前，手机正被她拿到眼前。",
+      "lines": [
+        {
+          "who": "lin",
+          "zh": "三块五？你管这个叫涨工资？",
+          "tone": "无奈，语速中等，音量正常，口齿清楚"
+        }
+      ],
+      "exit_state": "她把手机扣在桌上，靠回椅背；招财猫举爪不动，铃铛不亮。"
+    }
+  ],
+  "voice_over": {
+    "edge": {
+      "voice": "zh-CN-YunxiNeural",
+      "rate": "-4%",
+      "pitch": "-6Hz"
+    },
+    "lines": [
+      {
+        "shot": "S1_OVERTIME",
+        "at": 0.6,
+        "zh": "凌晨一点，林小满还在加班。"
+      },
+      {
+        "shot": "S5_PUNCHLINE",
+        "at": 3.8,
+        "zh": "招财猫说，这是它的极限了。"
+      }
+    ]
+  },
+  "post_graphics": {
+    "phone_ui_inserts": [
+      {
+        "id": "UI_PAY",
+        "after": "S4_REACT",
+        "dur": 3,
+        "layout": "notification",
+        "app": "工资卡",
+        "title": "到账通知",
+        "time": "01:07",
+        "items": [
+          "绩效奖励已到账：¥3.50",
+          "备注：招财猫专项激励"
+        ]
+      }
+    ]
+  },
+  "design_notes": "示例剧集：5 镜、有台词、有旁白、有一张插卡。用来验证「配好模型 → 出首帧 → 出视频 → 装配 → 后期」整条链。你可以直接改台词、换角色，或者复制成新项目。"
+}

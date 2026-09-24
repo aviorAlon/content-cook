@@ -1,0 +1,29 @@
+{
+  "title": "小满表情包",
+  "template": "emoji_pack",
+  "subject": {
+    "kind": "character",
+    "name": "小满",
+    "block": "二十六七岁的东亚女生，齐肩黑发扎低马尾，圆框眼镜，米白色棉质工装外套，里面浅灰 T 恤",
+    "assets": [],
+    "fidelity": 85
+  },
+  "style": "flat_cute",
+  "options": {
+    "expressions": [
+      "开心",
+      "大笑",
+      "哭",
+      "委屈",
+      "生气",
+      "惊讶",
+      "疑惑",
+      "无语"
+    ],
+    "with_caption": true
+  },
+  "image_params": {
+    "model": "@image",
+    "image_size": "2K"
+  }
+}

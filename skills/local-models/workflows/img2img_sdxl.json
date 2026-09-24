@@ -1,0 +1,46 @@
+{
+  "_comment": "SDXL 图生图（API 格式）。参考图由适配器先 POST /upload/image 传到 ComfyUI 的 input 目录，再把返回的文件名填进 10 号 LoadImage。画幅由输入图决定，所以映射里没有 width/height。denoise 越小越像原图（0.55 是人物换姿势的常用值）。",
+  "3": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 0,
+      "steps": 25,
+      "cfg": 7.0,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 0.55,
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["11", 0]
+    }
+  },
+  "4": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {"ckpt_name": "sd_xl_base_1.0.safetensors"}
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {"text": "", "clip": ["4", 1]}
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {"text": "", "clip": ["4", 1]}
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {"samples": ["3", 0], "vae": ["4", 2]}
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {"filename_prefix": "storystudio/img2img", "images": ["8", 0]}
+  },
+  "10": {
+    "class_type": "LoadImage",
+    "inputs": {"image": "example.png", "upload": "image"}
+  },
+  "11": {
+    "class_type": "VAEEncode",
+    "inputs": {"pixels": ["10", 0], "vae": ["4", 2]}
+  }
+}

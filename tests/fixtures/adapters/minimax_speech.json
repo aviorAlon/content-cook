@@ -1,0 +1,23 @@
+{
+  "role": "voice",
+  "adapter": "minimax_speech",
+  "config": {
+    "api_key": "k",
+    "model": "speech-02-hd",
+    "voice": "female-shaonv",
+    "base_url": "https://api.minimax.chat/v1"
+  },
+  "http": [
+    {
+      "match": "/t2a_v2",
+      "json": {
+        "data": {"audio": "4d503344415441", "status": 2},
+        "extra_info": {"audio_length": 1200, "audio_format": "mp3"},
+        "base_resp": {"status_code": 0, "status_msg": "success"}
+      }
+    }
+  ],
+  "expect": {
+    "payload_contains": ["voice_setting", "female-shaonv", "speech-02-hd"]
+  }
+}

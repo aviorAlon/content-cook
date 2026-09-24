@@ -1,0 +1,6 @@
+{
+  "role": "image",
+  "adapter": "example_async_images",
+  "config": {"model": "demo-image"},
+  "expect": {"submit_status": "PENDING", "task_id_prefix": "exasync-img:"}
+}

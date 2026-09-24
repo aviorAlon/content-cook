@@ -1,0 +1,61 @@
+{
+  "title_zh": "小狐狸的三只袜子",
+  "title_en": "Little Fox's Three Socks",
+  "age_band": "2-4",
+  "bilingual_mode": "sentence_alternate",
+  "education": {
+    "cognition": "认颜色：红、黄、蓝",
+    "vocab": ["袜子/sock", "风/wind"],
+    "emotion": "东西被风吹走了也没关系，分给朋友一样开心"
+  },
+  "style_anchor": "Soft watercolor picture-book art, rounded friendly shapes, airy pastel washes, visible paper grain",
+  "negative": "photo, 3D render, text, letters, watermark, frightening, gloomy",
+  "characters": {
+    "fox": {"name": "小狐狸", "name_en": "Little Fox", "block": "橘红色小狐狸，白色尾巴尖，穿一件浅绿色小背心", "asset": null},
+    "bird": {"name": "小鸟", "name_en": "Little Bird", "block": "圆滚滚的天蓝色小鸟，黄色尖嘴，肚皮是白色的", "asset": null},
+    "mouse": {"name": "小老鼠", "name_en": "Little Mouse", "block": "灰色小老鼠，一对大圆耳朵，粉色鼻头，细细的尾巴", "asset": null}
+  },
+  "scenes": {
+    "yard": {"name": "小狐狸的院子", "block": "木头小屋前的院子，两根木桩之间拉着一根晾衣绳，午后的阳光，远处是低矮的篱笆", "asset": null},
+    "tree": {"name": "大树", "block": "院子边一棵枝叶茂密的大树，树干粗粗的，枝头伸到篱笆外面", "asset": null},
+    "meadow": {"name": "草丛", "block": "篱笆外一片软软的草丛，零星开着小白花", "asset": null},
+    "bedroom": {"name": "小狐狸的小床", "block": "小屋里靠窗的一张小木床，铺着格子被子，窗外是傍晚的天空", "asset": null}
+  },
+  "narration": {"zh_voice": "", "en_voice": "", "en_rate": "-8%", "pause": {"lead": 0.4, "between": 0.6, "tail": 0.8}},
+  "music": null,
+  "page_turn_sfx": null,
+  "delivery": {"aspect_ratio": "9:16", "resolution": "1080p", "landscape_variant": false},
+  "image_params": {"model": "@image", "aspect_ratio": "3:4", "image_size": "2K"},
+  "subtitle": {"font_path": null, "zh_size": 96, "en_size": 64, "highlight": "#FFD27A"},
+  "pages": [
+    {"id": "P01", "kind": "cover", "scene": "小狐狸站在院子的晾衣绳下，全身，面向读者，双手捧着红、黄、蓝三只袜子，微笑", "characters": ["fox"], "scene_ref": "yard",
+     "zh": "小狐狸的三只袜子", "en": "Little Fox's Three Socks", "hook": "", "education": "", "kb": {"dir": "push", "scale": [1.0, 1.06]}, "flip": "page_turn"},
+    {"id": "P02", "kind": "page", "scene": "小狐狸踮起脚，把红、黄、蓝三只袜子夹上晾衣绳，午后阳光，中景", "characters": ["fox"], "scene_ref": "yard",
+     "zh": "小狐狸晾袜子：红的，黄的，蓝的。", "en": "Little Fox hangs up her socks: red, yellow and blue.", "hook": "起风了，袜子会怎么样呢？",
+     "education": "认知:红、黄、蓝；词汇:袜子/sock", "kb": {"dir": "left", "scale": null}, "flip": "page_turn"},
+    {"id": "P03", "kind": "page", "scene": "一阵风吹过院子，红袜子从晾衣绳上飘起来，小狐狸伸长手臂去够，中景", "characters": ["fox"], "scene_ref": "yard",
+     "zh": "呼呼呼，风一吹，红袜子飞走了！", "en": "Whoosh, the wind blows the red sock away!", "hook": "红袜子飞到哪儿去了？", "education": "词汇:风/wind",
+     "kb": {"dir": "up", "scale": null}, "flip": "page_turn"},
+    {"id": "P04", "kind": "page", "scene": "大树的枝头挂着红袜子，小鸟从袜口探出头，小狐狸站在树下仰头看，中景", "characters": ["fox", "bird"], "scene_ref": "tree",
+     "zh": "红袜子挂在树上，小鸟在里面做了个窝。", "en": "The red sock hangs in the tree, and Little Bird has made a nest in it.", "hook": "", "education": "",
+     "kb": {"dir": "pull", "scale": null}, "flip": "page_turn"},
+    {"id": "P05", "kind": "page", "scene": "又一阵风吹过院子，黄袜子从晾衣绳上飘起来，小狐狸张大了嘴，中景", "characters": ["fox"], "scene_ref": "yard",
+     "zh": "呼呼呼，风一吹，黄袜子飞走了！", "en": "Whoosh, the wind blows the yellow sock away!", "hook": "黄袜子飞到哪儿去了？", "education": "词汇:风/wind",
+     "kb": {"dir": "right", "scale": null}, "flip": "page_turn"},
+    {"id": "P06", "kind": "page", "scene": "草丛里躺着黄袜子，小老鼠蜷在袜子里睡午觉，小狐狸蹲在旁边轻轻看，中景", "characters": ["fox", "mouse"], "scene_ref": "meadow",
+     "zh": "黄袜子落在草丛里，小老鼠钻进去睡午觉。", "en": "The yellow sock lands in the grass, and Little Mouse naps inside it.", "hook": "", "education": "",
+     "kb": {"dir": "push", "scale": null}, "flip": "page_turn"},
+    {"id": "P07", "kind": "page", "scene": "第三阵风吹过院子，蓝袜子从晾衣绳上飘起来，小狐狸追着跑，全景", "characters": ["fox"], "scene_ref": "yard",
+     "zh": "呼呼呼，风一吹，蓝袜子飞走了！", "en": "Whoosh, the wind blows the blue sock away!", "hook": "这一次，蓝袜子会落在哪儿？", "education": "词汇:风/wind",
+     "kb": {"dir": "up", "scale": null}, "flip": "page_turn"},
+    {"id": "P08", "kind": "page", "scene": "蓝袜子从窗口飘进小屋，正好落在小狐狸的小床上，小狐狸扶着门框笑，中景", "characters": ["fox"], "scene_ref": "bedroom",
+     "zh": "蓝袜子飞呀飞，落在了小狐狸自己的小床上！", "en": "The blue sock flies and flies, and lands on Little Fox's own bed!", "hook": "",
+     "education": "情感:风把袜子送给了用得上的朋友", "kb": {"dir": "down", "scale": null}, "flip": "page_turn"},
+    {"id": "P09", "kind": "page", "scene": "院子里，小狐狸朝树上的小鸟和篱笆外草丛里的小老鼠挥手，全景", "characters": ["fox", "bird", "mouse"], "scene_ref": "yard",
+     "zh": "一只给小鸟，一只给小老鼠，一只给我！", "en": "One for Little Bird, one for Little Mouse, and one for me!", "hook": "", "education": "认知:红、黄、蓝各一只",
+     "kb": {"dir": "left", "scale": null}, "flip": "page_turn"},
+    {"id": "P10", "kind": "back", "scene": "傍晚，小狐狸脚上穿着蓝袜子，盖着格子被子睡在小床上，窗外亮起第一颗星，中景", "characters": ["fox"], "scene_ref": "bedroom",
+     "zh": "小狐狸穿上蓝袜子，暖暖地睡着了。晚安。", "en": "Little Fox puts on the blue sock and falls asleep, warm and cozy. Good night.", "hook": "", "education": "",
+     "kb": {"dir": "pull", "scale": [1.06, 1.0]}, "flip": "cut"}
+  ]
+}

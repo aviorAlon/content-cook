@@ -1,0 +1,32 @@
+{
+  "role": "video",
+  "adapter": "openrouter_video",
+  "config": {
+    "api_key": "k",
+    "model": "minimax/hailuo-3"
+  },
+  "responses": {
+    "video_generation.generate": {
+      "id": "job1",
+      "status": "pending",
+      "error": null
+    },
+    "video_generation.get_generation": {
+      "status": "completed",
+      "error": null
+    },
+    "video_generation.get_video_content": {
+      "content": "$BYTES:MP4DATA"
+    }
+  },
+  "expect": {
+    "task_id_prefix": "openrouter:",
+    "final_status": "FINISHED",
+    "duration": 6,
+    "resolution": "768p",
+    "aspect_ratio": "adaptive",
+    "payload_contains": [
+      "frame_images"
+    ]
+  }
+}

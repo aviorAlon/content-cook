@@ -1,0 +1,56 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite3
+*.log
+*.bundle
+
+# 用户数据：在仓库里直接跑开发服务时，数据根默认就是仓库目录（项目、产物、账本、回收站、草稿缓存都写在这里）
+data/
+/content/
+/output/
+/local_workflows/
+/.webui_draft_cache/
+/.webui_deleted/
+.dev-settings.json
+
+# 临时目录，不入库
+/tmp/
+# 仓库根目录下的散落录屏/截图
+/*.mp4
+/*.mov
+/screenshot-*.png
+
+# 本机工具的工作区与会话配置（含机器相关路径），不入库
+.claude/
+
+# 本地参考素材与自己的作品目录，不入库
+/prompt/
+/production/
+
+# 本地工具缓存与编辑器配置（含本机路径）
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.vscode/
+.idea/
+frontend/coverage/
+
+# 打包自检的私有词表（desktop/verify_bundle.py 读它），只放本机
+/.release-denylist
+
+# 前端工具链
+frontend/node_modules/
+
+# PyInstaller 产物；打安装包时另外带的 ffmpeg 可执行文件（第三方二进制，各自下载）
+build/
+dist/
+/desktop/ffmpeg/

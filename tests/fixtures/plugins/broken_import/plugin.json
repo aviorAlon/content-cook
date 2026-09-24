@@ -1,0 +1,9 @@
+{
+  "name": "broken_import",
+  "version": "0.0.1",
+  "api": 1,
+  "provides": {
+    "adapters": {"image": ["broken_images"], "video": ["broken_video"]},
+    "prefixes": ["broken-img:", "broken-vid:"]
+  }
+}

@@ -1,0 +1,105 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    name: pytest (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: System deps (ffmpeg + CJK font, Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-cjk
+      - name: System deps (ffmpeg, Windows)
+        if: runner.os == 'Windows'
+        run: choco install ffmpeg -y --no-progress
+      - run: pip install -e ".[desktop,dev]"
+      - run: pytest -q
+      - name: 提示词金丝雀
+        run: python scripts/refresh_prompt_canary.py
+
+  frontend:
+    name: frontend build + vitest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: frontend
+      - run: npm test
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+      - name: 构建产物必须已提交（改了前端要重新 build 再提交）
+        run: git diff --exit-code --stat -- src/webui/static/app || (echo "::error::src/webui/static/app 与 frontend/ 源码不一致，请 cd frontend && npm run build 后提交" && exit 1)
+
+  package-windows:
+    name: Windows 包
+    needs: [python, frontend]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[desktop]"
+      - run: python -m PyInstaller desktop/storystudio.spec --noconfirm
+      - name: 无窗口冒烟：起服务并打 /api/health
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath dist/StoryStudio/StoryStudio.exe -ArgumentList "--no-open","--no-token","--port","8791","--project-root","$env:TEMP/ss" -PassThru
+          Start-Sleep -Seconds 8
+          $r = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8791/api/health
+          if ($r.StatusCode -ne 200) { throw "health $($r.StatusCode)" }
+          Stop-Process -Id $p.Id -Force
+      # 默认启动（带本机访问令牌）：启动器探活要带上令牌，不然把自己的 401 当成「端口被别的程序占着」直接退出（SEC-1）。
+      # 令牌是随机的读不到，所以看进程还活着、不带令牌打 /api/health 是 401
+      - name: 无窗口冒烟（默认带令牌）：启动器认得出自己，不退出
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath dist/StoryStudio/StoryStudio.exe -ArgumentList "--no-open","--port","8792","--project-root","$env:TEMP/ss-token" -PassThru
+          Start-Sleep -Seconds 10
+          if ($p.HasExited) { throw "launcher exited with code $($p.ExitCode) in token mode" }
+          try { Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8792/api/health | Out-Null; throw "health without token should be 401" }
+          catch { if ($_.Exception.Response.StatusCode.value__ -ne 401) { throw $_ } }
+          Stop-Process -Id $p.Id -Force
+      # 冒烟之后、打安装包之前自检：Inno Setup 与上传的产物就是此刻 dist 里的东西。测试 / 白名单外的数据文件 /
+      # 本机数据 / 插件 / 打包机路径都不许进包。私有词表只从 secret 传进来（一行一个词），不进仓库；命中时日志里只报序号
+      - name: 包内容自检
+        env:
+          BUNDLE_DENYLIST: ${{ secrets.BUNDLE_DENYLIST }}
+        run: python desktop/verify_bundle.py dist/StoryStudio --ffmpeg desktop/ffmpeg
+      - name: 安装包（Inno Setup）
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          $v = (python -c "import sys; sys.path.insert(0,'src'); from genkit.version import __version__; print(__version__)").Trim()
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DAppVersion=$v" desktop\installer.iss
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StoryStudio-windows
+          path: |
+            dist/StoryStudio
+            dist/installer/*.exe
