@@ -1,4 +1,4 @@
-[中文](../zh/architecture.md) | English
+English | [中文](../zh/architecture.md)
 
 # Technical architecture
 
@@ -699,7 +699,7 @@ Limits worth stating plainly:
 - See "已验证 / 未验证" (verified / unverified) in [CHANGELOG.md](../../CHANGELOG.md) and
   [BACKLOG.md](../../BACKLOG.md) (both Chinese).
 
-How to run these tests when contributing is covered in the [Contributing guide](../../CONTRIBUTING.en.md).
+How to run these tests when contributing is covered in the [Contributing guide](../../CONTRIBUTING.md).
 
 ## 14. Further reading
 

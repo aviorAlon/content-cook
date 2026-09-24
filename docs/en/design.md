@@ -1,4 +1,4 @@
-[中文](../zh/design.md) | English
+English | [中文](../zh/design.md)
 
 # Design principles and features
 

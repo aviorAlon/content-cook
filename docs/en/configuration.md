@@ -1,4 +1,4 @@
-[中文](../zh/configuration.md) | English
+English | [中文](../zh/configuration.md)
 
 # Configuration reference
 

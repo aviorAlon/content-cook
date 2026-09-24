@@ -1,4 +1,4 @@
-中文 | [English](../en/configuration.md)
+[English](../en/configuration.md) | 中文
 
 # 配置参考
 

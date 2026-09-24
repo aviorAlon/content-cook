@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "storystudio"
 dynamic = ["version"]
-description = "Content Cook · 内容创作工作台（本地版）：多模块的 AI 内容创作工具，模型自己配；短剧模块：剧本 → 分镜 → 首帧 → 视频 → 质检 → 后期合成"
+description = "Content Cook: a local-first, multi-module AI content creation workbench where you bring your own models (内容创作工作台，本地版)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"

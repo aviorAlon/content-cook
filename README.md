@@ -1,266 +1,379 @@
-# Content Cook · 内容创作工作台
+# Content Cook · Content creation workbench
 
-中文 | [English](README.en.md)
+English | [中文](README.zh-CN.md)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/aviorAlon/content-cook/actions/workflows/ci.yml/badge.svg)](https://github.com/aviorAlon/content-cook/actions/workflows/ci.yml)
 
-**一个在自己电脑上跑的 AI 内容创作工作台：模型自己接，数据留在本机，花钱之前先告诉你要发几次请求。**
+**An AI content creation workbench that runs on your own computer: you bring the models, your data stays
+local, and every paid run tells you how many requests it will send before anything is spent.**
 
-短剧、绘本、播客、单条视频、表情包、写真、配乐、剧本打磨——九个功能模块挂在同一个工作台上，共用模型设置、音色库、统一网关、任务中心、回收站与导出。模型由你自己接：云端账号、OpenAI 兼容网关或本机模型都行；项目、产物、账本和密钥都存在本机。
+Short dramas, picture books, podcasts, single video clips, sticker packs, portrait sets, music and script
+polishing: nine modules share one workbench, with common model settings, a voice library, a unified
+gateway, a task centre, a trash bin and exports. You connect the models yourself (cloud accounts,
+OpenAI-compatible gateways or models running on your machine). Projects, outputs, ledgers and API keys are
+stored only on your computer; what is sent to model providers is listed under
+[Data and privacy](#data-and-privacy).
 
-> 当前版本 **v0.1.0**，是第一个公开发布的版本。桌面版（PyInstaller 单文件夹）只在 Windows x64 上实际打过、跑过，Inno Setup 安装包那一步还没实际跑过；不少模型来源只有模拟测试（假客户端），没用真实账号联调过。动手之前请先看 [项目状态与已知限制](#项目状态与已知限制)。
+> Current version: **v0.1.0**, the first open-source release. The desktop build (PyInstaller folder) has only
+> been built and run on Windows x64; the Inno Setup installer step has never actually run. Many model sources
+> are covered by fake-client tests only. Please read
+> [Project status and known limitations](#project-status-and-known-limitations) before you start.
 
-## 目录
+The UI is available in Chinese and English (switch at the bottom of the sidebar). Most of the in-depth
+design and runtime documents in this repository are written in Chinese; the English guides are listed in
+[Documentation](#documentation).
 
-- [这是什么、给谁用](#这是什么给谁用)
-- [功能模块](#功能模块)
-- [设计特点](#设计特点)
-- [数据与隐私](#数据与隐私)
-- [快速开始](#快速开始)
-- [运行与启动参数](#运行与启动参数)
-- [模型来源](#模型来源)
-- [命令行 storyvideo](#命令行-storyvideo)
-- [打包桌面客户端](#打包桌面客户端)
-- [开发](#开发)
-- [文档导航](#文档导航)
-- [项目状态与已知限制](#项目状态与已知限制)
-- [参与贡献](#参与贡献)
-- [致谢](#致谢)
-- [许可证](#许可证)
+## Contents
 
-## 这是什么、给谁用
+- [What it is and who it is for](#what-it-is-and-who-it-is-for)
+- [Modules](#modules)
+- [Design highlights](#design-highlights)
+- [Data and privacy](#data-and-privacy)
+- [Quick start](#quick-start)
+- [Running and launch options](#running-and-launch-options)
+- [Model sources](#model-sources)
+- [The storyvideo CLI](#the-storyvideo-cli)
+- [Building the desktop app](#building-the-desktop-app)
+- [Development](#development)
+- [Documentation](#documentation)
+- [Project status and known limitations](#project-status-and-known-limitations)
+- [Contributing](#contributing)
+- [Acknowledgements](#acknowledgements)
+- [License](#license)
 
-Content Cook 是一个**本地优先**的 AI 内容创作工具。它把「写稿 → 出图 / 出视频 / 配音 → 质检 → 合成 → 交付」这类流程装进一个桌面应用：界面是本机的一个网页（原生窗口或系统浏览器），后端是 Python（FastAPI），生成用你自己配置的模型来源。
+## What it is and who it is for
 
-| 适合谁 | 常见痛点 | 这里给的 |
+Content Cook is a **local-first** AI content creation tool. It packs pipelines such as
+"write → generate images / videos / voices → review → compose → deliver" into one desktop app. The UI is a
+local web page (in a native window or your browser), the backend is Python (FastAPI), and generation goes
+through whatever model sources you configure.
+
+| Who | Typical pain | What you get |
 |---|---|---|
-| 独立短剧 / 短视频创作者 | 在多个网站之间搬图搬视频，提示词、参考图、版本靠记忆和文件夹管理；生成完才发现台词念错、镜头接不上 | 一个项目一份 spec，逐镜卡片，三道审片闸 + 台词识别闸，成片之前就知道哪镜不对 |
-| 小工作室的内容负责人 | 不同人用不同模型账号，成本和质量没法比；换模型要重写提示词 | 模型是「角色」而不是「厂商」：每个角色选一个来源，提示词编译与具体模型解耦 |
-| 会写脚本的技术型创作者 | 想自动化，又不想自己维护一堆脚本 | 短剧的生产流程（校验冻结、首帧 / 视频、审片、台词识别、装配、后期合成、崩溃恢复）都有命令行（`storyvideo`），和界面走同一套运行时 |
+| Independent short-drama and short-video creators | Images and clips shuffled between websites; prompts, reference images and versions tracked by memory and folders; wrong lines or broken continuity found only after generation | One spec per project, shot-by-shot cards, three review gates plus a dialogue-recognition gate, so you know which shot is wrong before the final cut |
+| Content leads in small studios | Different people on different model accounts, so cost and quality cannot be compared; switching models means rewriting prompts | Models are *roles*, not vendors: pick one source per role, and prompt compilation is decoupled from any specific model |
+| Technical creators who script | Want automation without maintaining a pile of scripts | The drama production pipeline (freeze, frames, videos, review, dialogue recognition, assembly, post-production, crash recovery) is also available as a CLI (`storyvideo`) that shares the UI's runtime |
 
-**不做**：多人协作与权限、云端渲染队列、素材商城、账号体系、任何厂商独占的功能。服务只绑本机地址，不支持从局域网或远程访问。
+**Out of scope:** multi-user collaboration and permissions, cloud render queues, an asset store, user
+accounts, and vendor-exclusive features. The server only listens on the loopback address; LAN or remote
+access is not supported.
 
-### 关于名字
+### About the names
 
-「Content Cook」是产品的工作名：界面、窗口标题和接口里的产品名都从 `src/webui/branding.py` 读（安装包脚本 `desktop/installer.iss` 另有一份默认 AppName，有测试守着必须和它一致，改名时要一起改）。下面这些是技术标识，**有意不跟产品名走**，以后改产品名也不会动它们：
+"Content Cook" is a working product name. The UI, window title and API read it from `src/webui/branding.py`;
+the installer script `desktop/installer.iss` keeps its own default AppName, which a test requires to match,
+so change both when renaming. The technical identifiers below **intentionally do not follow the product name** and will not change if it is renamed:
 
-| 标识 | 取值 |
+| Identifier | Value |
 |---|---|
-| Python 包名（pyproject） | `storystudio` |
-| 命令行 | `storystudio`（桌面启动器）、`storyvideo`（短剧命令行） |
-| 设置目录 | `~/.storystudio` |
-| 桌面版 | `StoryStudio.exe`、打包目录 `dist/StoryStudio/`、macOS 包 `StoryStudio.app` |
-| 桌面版默认数据目录 | `~/StoryStudio` |
-| 前端 npm 包 | `storystudio-frontend` |
+| Python distribution (pyproject) | `storystudio` |
+| Commands | `storystudio` (desktop launcher), `storyvideo` (short-drama CLI) |
+| Settings directory | `~/.storystudio` |
+| Desktop build | `StoryStudio.exe`, build folder `dist/StoryStudio/`, macOS bundle `StoryStudio.app` |
+| Default data directory of the desktop build | `~/StoryStudio` |
+| Frontend npm package | `storystudio-frontend` |
 
-## 功能模块
+## Modules
 
-| 模块 | 做什么 |
+| Module | What it does |
 |---|---|
-| **短剧** | 剧本（按场）→ 逐镜分镜与提示词编译 → 首帧 → 视频 → 三道审片（首帧 / 视频 / 成片）+ 台词识别闸 → 装配 → 后期层（旁白、配音、配乐、插卡、画面文字、角标、静音、字幕）→ 海报与交付包。生产流程也有命令行 `storyvideo`。 |
-| **图片工作台** | 单张 / 成组出图、多模型对比、图卡叠字。 |
-| **单条视频** | 一条提示词出一段视频，按「全片设定 / 分段时间线 / 衔接与收尾」三段来写。 |
-| **绘本 / 有声书** | 统一画风的插画 + 双语朗读与字幕；每页停多久按朗读音频的实际长度排。 |
-| **表情与头像** | 按模板出一组图：表情包（微信规格）、贴图、多风格头像。 |
-| **纪念写真** | 满月 / 百天 / 周岁 / 婚纱：按场景清单出一组照片，可叠祝语与日期。 |
-| **配乐** | 按意图出配乐，一键投放到短剧的配乐层、绘本的 BGM 或播客的片头 / 垫乐 / 片尾。需要一个提供 `music` 角色的来源（目前没有内置来源，见 [模型来源](#模型来源)）。 |
-| **AI 播客** | 对谈稿（环节 / 台词 / 听友问答）→ 静态检查与真人感审稿 → 逐句配音 → 混音 → 交付包。 |
-| **剧本工作台** | 台词单独写、留版本、并排比一比再挑一版，投放到播客环节 / 短剧场次 / 镜，或从它们导入。 |
+| **Short drama** | Screenplay (by scene) → per-shot storyboard and prompt compilation → first frames → videos → three review gates (frames / videos / final) plus a dialogue-recognition gate → assembly → post layers (narration, dubbing, music, cards, on-screen text, labels, silence, subtitles) → poster and delivery pack. The production pipeline is also available as the `storyvideo` CLI. |
+| **Image studio** | Single or batch images, multi-model comparison, text cards. |
+| **Single clip** | One prompt, one video clip, written in three parts: global setup / segmented timeline / continuity and ending. |
+| **Picture book / audiobook** | Illustrations in one consistent style plus bilingual narration and subtitles; each page stays on screen as long as its narration audio actually runs. |
+| **Stickers & avatars** | Template-driven image sets: emoji packs (WeChat sizes), stickers, multi-style avatars. |
+| **Milestone portraits** | Full-moon, 100-day, first-birthday and wedding sets from a scene list, with optional greeting and date overlay. |
+| **Music** | Generates music from an intent brief and drops it into a drama's music layer, a picture book's BGM, or a podcast's intro / bed / outro. Needs a source that provides the `music` role (there is no built-in one yet; see [Model sources](#model-sources)). |
+| **AI podcast** | Talk script (segments / lines / listener Q&A) → static checks and a human-likeness review → per-line voices → mix → delivery pack. |
+| **Script lab** | Write dialogue on its own, keep versions, compare them side by side and pick one, then hand it to a podcast segment or a drama scene / shot, or import from them. |
 
-表情与头像、纪念写真、图片工作台共用同一套「图片集」引擎：按模板出一组图 → 挑选 → 本机后处理 → 打包。
+Stickers & avatars, milestone portraits and the image studio share one "image set" engine: generate a set
+from a template → pick → local post-processing → package.
 
-各模块共用的部分：
+Shared across modules:
 
-- **模型设置**：五个角色（文本、生图、语音、视频、配乐）各选来源，带「测试连接」、统一网关和本机模型扫描。
-- **音色库**：试听并保存音色，绑定给短剧的角色或旁白（绑定时拷贝参数）；播客逐句配音也从这里选音色。
-- **出图风格卡**：24 张卡，图片集、绘本、海报、单条视频共用。
-- **镜头库与风格库**：短剧提示词编译用的数据，可在界面里逐条改（写盘前会校验）。
-- **任务中心**、**回收站**（删除可恢复）、最近项目、各模块的交付导出、中英双语界面。
-- **示例项目**：随程序附带 9 个示例；除剧本工作台外，各模块首页都能一键复制成自己的项目，不花钱。
+- **Model settings**: five roles (text, image, voice, video, music), one source each, with
+  "Test connection", a unified gateway and a scan for local model servers.
+- **Voice library**: audition and save voices, bind them to drama characters or narration (binding copies
+  the parameters); podcast lines also pick their voices here.
+- **Image style cards**: 24 cards shared by image sets, picture books, posters and single clips.
+- **Shot & style libraries**: the data behind drama prompt compilation, editable entry by entry in the UI
+  (validated before it is written).
+- **Task centre**, **Trash** (deletions can be restored), recent projects, per-module delivery exports, and a
+  bilingual Chinese / English UI.
+- **Sample projects**: nine ship with the app. Every module home page except the script lab can copy one
+  into your own project, free of charge.
 
-模块与服务的分层见 [架构说明](docs/zh/architecture.md)。
+See the [architecture guide](docs/en/architecture.md) for how modules and shared services are layered.
 
-## 设计特点
+## Design highlights
 
-| 特点 | 具体做法 |
+| Highlight | How it works |
 |---|---|
-| **本地优先** | 服务只绑 `127.0.0.1`，每次启动生成随机访问令牌，并校验 Host / Origin；项目、产物、账本、密钥都在本机；没有遥测。 |
-| **模型自带、可替换** | 模型按「角色」配置，每个角色一个来源；内置 OpenAI 兼容、OpenRouter、火山方舟、MiniMax、Edge TTS 和本机服务（Ollama、ComfyUI、SD WebUI 等）；其余来源由插件提供。spec 里写 `"@image"` / `"@video"` 就用模型设置里的模型。 |
-| **先预估，再花钱** | 短剧生成前先出预估（要发几次请求、哪些镜、失败和缺上游的镜），确认时带上预估指纹，服务端按磁盘状态重算，对不上就拒绝（409），一个请求都不发；其他模块在确认框里写明请求次数，本机来源直接写「不花钱」。AI 起草不自动重试、不偷偷多出候选。 |
-| **冻结与账本** | 短剧「开始制作」时冻结 spec；短剧的每一笔付费请求都记进本地 SQLite 账本（带请求指纹）。提交前先记下「正在提交」，崩溃后只会留下待核对的记录，不会悄悄重复提交、重复扣费。单条视频、图片集、绘本、配乐把每次生成记在各自的项目文件里。 |
-| **从不覆盖** | 每次重出都存成新文件（带序号或时间戳），失败不会顶掉上一次的好结果；成片原子写入，失败不留半个文件；删除进回收站，可以整体恢复。 |
-| **质检前置** | 短剧三道人工审片闸（首帧 / 视频 / 成片）+ 技术 QC + 台词识别闸（本机 faster-whisper，字错率 ≤0.30 通过，≤0.45 待复核）；多数模块都有免费的本机静态检查（时长预算、运镜、台词清晰度、连续性、真人感等），文本模型审稿一次只发一个请求。 |
-| **为长片省内存** | 后期合成按段流式渲染，不再把全片塞进一条 ffmpeg 命令；绘本逐页渲染再无损拼接；成片原子写入。 |
-| **可扩展** | 插件从用户目录加载，登记新的模型来源、异步任务前缀、能力记录与翻译，不用改核心代码；插件出错时应用照常启动并说清原因。插件接口 v1 仍是实验性的。 |
-| **有成熟库就用库** | 各家接口优先用官方 SDK（openai、openrouter、火山引擎 SDK），Edge TTS 用社区库 edge-tts（不是微软官方接口）；MiniMax、SD WebUI、ComfyUI 和 OpenAI 兼容 videos 走手写的 HTTP。桌面壳是 pywebview + PyInstaller，界面只通过 HTTP 和后端通信。 |
+| **Local-first** | The server binds to `127.0.0.1` only, creates a random access token on every start, and checks Host / Origin. Projects, outputs, ledgers and keys stay on your machine. No telemetry. |
+| **Bring your own models** | Models are configured per role, one source per role. Built in: OpenAI-compatible APIs, OpenRouter, Volcengine Ark, MiniMax, Edge TTS and local servers (Ollama, ComfyUI, SD WebUI and others); anything else comes from plugins. Writing `"@image"` / `"@video"` in a spec means "use the model from settings". |
+| **Estimate first, then spend** | Before drama generation you get an estimate (how many requests, which shots, which failed or lack upstream frames). Confirming sends the estimate's fingerprint back; the server recomputes it from disk and refuses with 409 if it no longer matches, without sending a single request. Other modules state the request count in the confirm dialog, and local sources say "free". AI drafting never retries automatically or quietly generates extra candidates. |
+| **Freeze and ledger** | "Start production" freezes the drama spec. Every paid drama request is recorded in a local SQLite ledger together with a request fingerprint. The "submitting" intent is written before the provider is called, so a crash leaves a row to reconcile, never a silent resubmission or double charge. Single clips, image sets, picture books and music record every generation attempt in their own project files. |
+| **Never overwrite** | Every retake is saved as a new file (numbered or time-stamped), and a failure never replaces the last good result. Final renders are written atomically, so a failed render leaves no half file. Deleting moves a project to the trash, from which it can be restored as a whole. |
+| **Review before spending more** | Three human review gates for drama (frames / videos / final), technical QC, and a dialogue-recognition gate (local faster-whisper: character error rate ≤ 0.30 passes, ≤ 0.45 needs a re-listen). Most modules also have free local static checks (duration budget, camera moves, dialogue clarity, continuity, podcast human-likeness and more); text-model reviews send one request each. |
+| **Memory-friendly long renders** | Post-production is rendered in streamed segments instead of one giant ffmpeg command; picture books are rendered page by page and joined without re-encoding. |
+| **Extensible** | Plugins load from your user directory and can register new model sources, async task prefixes, capability records and translations without touching the core. If a plugin fails, the app still starts and explains why. Plugin API v1 is experimental. |
+| **Use mature libraries** | Official SDKs where they exist (openai, openrouter, the Volcengine SDK); Edge TTS goes through the community library edge-tts (not an official Microsoft API); MiniMax, SD WebUI, ComfyUI and OpenAI-compatible videos use hand-written HTTP. The desktop shell is pywebview + PyInstaller, and the UI talks to the backend over HTTP only. |
 
-设计取舍与原因见 [设计说明](docs/zh/design.md)，完整的设计记录在 [DESIGN.md](DESIGN.md)。
+The reasoning behind these choices is in the [design guide](docs/en/design.md); the full design log is
+[DESIGN.md](DESIGN.md) (Chinese).
 
-## 数据与隐私
+## Data and privacy
 
-- 服务只绑 `127.0.0.1`，并带一个每次启动随机生成的访问令牌；还会校验 Host / Origin，挡住别的网页借浏览器操纵本机服务。
-- 项目文件、产物、账本在**数据目录**（开发态默认启动时的当前目录，桌面版默认 `~/StoryStudio`，可用 `--project-root` 或 `STORYSTUDIO_PROJECT_ROOT` 指定）。
-- 模型设置与密钥在 `~/.storystudio/settings.json`（可用 `STORYSTUDIO_HOME` 换目录），接口回传一律打码，日志与任务记录也会遮掉密钥。
-- 生成时发出去的是提示词、参考图 / 参考音频和参数，收件方是你配置的模型来源（音色克隆会把你上传的参考录音发给 MiniMax）。
-- 朗读、旁白、播客配音没指定音色时默认用 Edge TTS（微软的在线朗读服务），要念的文字会发给它。
-- 其余联网都要你点了才发：拉 OpenRouter 公开模型目录、检查更新（填了更新地址才查，只查不下载）、Edge TTS 音色列表、一键安装台词识别（从 PyPI 下载）、第一次跑台词识别时下载 faster-whisper 模型（从 Hugging Face）。没有遥测。
+- The server binds to `127.0.0.1` only and requires an access token that is generated randomly on each
+  start. It also checks Host / Origin, so other web pages cannot use your browser to drive the local service.
+- Project files, outputs and ledgers live in the **data directory** (in development: the current directory
+  at launch; desktop build: `~/StoryStudio`; override with `--project-root` or `STORYSTUDIO_PROJECT_ROOT`).
+- Model settings and keys live in `~/.storystudio/settings.json` (move the directory with
+  `STORYSTUDIO_HOME`). The API only ever returns masked keys, and keys are masked in logs and task records.
+- What leaves your machine during generation: prompts, reference images / reference audio and parameters,
+  sent to the model sources you configured. Voice cloning uploads your reference recording to MiniMax.
+- Narration, voice-over and podcast voices default to Edge TTS (Microsoft's online speech service) when no
+  other voice is chosen, so the text to be spoken is sent there.
+- Everything else only happens when you click it: fetching OpenRouter's public model list, checking for
+  updates (only if you set an update URL; it checks but never downloads), listing Edge TTS voices,
+  installing dialogue recognition (from PyPI), and downloading the faster-whisper model on the first
+  recognition run (from Hugging Face). No telemetry.
 
-| 位置 | 放什么 | 默认 |
+| Location | Contents | Default |
 |---|---|---|
-| 数据目录 | `content/`（项目文件）、`output/`（产物与短剧账本）、任务记录、回收站、自定义 ComfyUI 工作流 | 开发态：启动时的当前目录；桌面版：`~/StoryStudio` |
-| 设置目录 | `settings.json`（模型设置与密钥）、`logs/`、`cache/`、音色库、模型目录缓存、`plugins/` | `~/.storystudio` |
+| Data directory | `content/` (project files), `output/` (outputs and the drama ledger), task records, trash, custom ComfyUI workflows | Development: current directory at launch; desktop build: `~/StoryStudio` |
+| Settings directory | `settings.json` (model settings and keys), `logs/`, `cache/`, voice library, model catalogue cache, `plugins/` | `~/.storystudio` |
 
-完整的目录结构和环境变量见 [配置说明](docs/zh/configuration.md)。
+The full layout and every environment variable are in the [configuration guide](docs/en/configuration.md).
 
-## 快速开始
+## Quick start
 
-### 环境要求
+### Requirements
 
-| 项 | 要求 |
+| Item | Requirement |
 |---|---|
-| 操作系统 | 桌面版（PyInstaller 单文件夹）目前只在 **Windows x64** 上打过、跑过；Inno Setup 安装包那一步还没实际跑过。macOS 打包脚本已写好但没在 Mac 上跑过；Linux 没有打包脚本。 |
-| Python | 3.10 及以上（`pyproject.toml` 声明）；实际只在 **3.11** 上测过。 |
-| ffmpeg / ffprobe | 要在 `PATH` 里。短剧装配与后期合成、绘本与播客出片、台词识别都用它们。下载：<https://ffmpeg.org/download.html> |
-| 中文字体 | 烧字幕、插卡、画面文字要用 CJK 字体。Windows 用系统自带的微软雅黑 / 黑体 / 宋体；macOS 用苹方等；Linux 可装 Noto CJK（如 Debian / Ubuntu 的 `fonts-noto-cjk`）。 |
-| Node.js | 只在修改界面时需要（建议 22 LTS）；构建好的界面已经提交在仓库里。 |
-| 可选 | `faster-whisper`（台词识别闸）；本机模型服务（Ollama、LM Studio、ComfyUI、SD WebUI 等）。 |
+| Operating system | The desktop build (PyInstaller folder) has only been built and run on **Windows x64**; the Inno Setup installer step has never actually run. The macOS packaging script exists but has never been run on a Mac; there is no Linux package. |
+| Python | 3.10 or newer (declared in `pyproject.toml`); only **3.11** has actually been tested. |
+| ffmpeg / ffprobe | Must be on `PATH`. Used for drama assembly and post-production, picture-book and podcast rendering, and dialogue recognition. Download: <https://ffmpeg.org/download.html> |
+| CJK font | Burned-in subtitles, cards and on-screen text need a CJK font. Windows uses its built-in Microsoft YaHei / SimHei / SimSun; macOS uses PingFang and similar; on Linux install Noto CJK (for example `fonts-noto-cjk` on Debian / Ubuntu). |
+| Node.js | Only needed to change the UI (22 LTS recommended); the built UI is committed to the repository. |
+| Optional | `faster-whisper` (dialogue-recognition gate); local model servers (Ollama, LM Studio, ComfyUI, SD WebUI and others). |
 
-### 方式一：从源码运行（推荐）
+### Option 1: run from source (recommended)
 
 ```bash
 git clone https://github.com/aviorAlon/content-cook.git
 cd content-cook
-python -m venv .venv                 # 可选，建议用虚拟环境；macOS / Linux 上用 python3
-# Windows：.venv\Scripts\activate    macOS / Linux：source .venv/bin/activate
-python -m pip install -U pip         # 可编辑安装需要较新的 pip（仓库没有 setup.py）
-pip install -e ".[desktop]"          # 含 pywebview（原生窗口）与 PyInstaller（打包）
-pip install -e ".[asr]"              # 可选：台词识别闸用的 faster-whisper
-storystudio                          # 起本地服务并打开窗口
+python -m venv .venv                 # optional, but recommended; use python3 on macOS / Linux
+# Windows: .venv\Scripts\activate    macOS / Linux: source .venv/bin/activate
+python -m pip install -U pip         # editable installs need a recent pip (there is no setup.py)
+pip install -e ".[desktop]"          # includes pywebview (native window) and PyInstaller (packaging)
+pip install -e ".[asr]"              # optional: faster-whisper for the dialogue-recognition gate
+storystudio                          # start the local server and open the window
 ```
 
-- Linux：原生窗口没测过，建议 `pip install -e .`（不装 desktop 组）后用 `storystudio --browser`；装了 `.[desktop]` 但缺 Qt / GTK 的 Python 绑定时，启动器会提示原生窗口起不来并改用系统浏览器。
-- 只支持**在克隆目录里的可编辑安装**（`pip install -e`）：镜头库、风格库、示例项目等运行时数据从仓库目录读取，不在 wheel 里。目前没有 PyPI 包。
-- 界面的构建产物已经提交在 `src/webui/static/app/`，只跑 Python 不需要 Node。
-- 不加 `--project-root` 时，数据写在启动时的当前目录。在仓库根目录直接跑也可以（`content/`、`output/` 等已在 `.gitignore` 里）；想和代码分开，就加 `--project-root <数据目录>`。
+- Linux: the native window is untested; install with `pip install -e .` (without the desktop extra) and start
+  with `storystudio --browser`. If `.[desktop]` is installed but the Qt / GTK Python bindings are missing, the
+  launcher reports that the native window could not start and falls back to the system browser.
+- Only an **editable install inside the clone** (`pip install -e`) is supported: runtime data such as the
+  shot library, style library and sample projects is read from the repository directory and is not part of
+  a wheel. There is no PyPI package.
+- The built UI is committed in `src/webui/static/app/`, so running the Python side does not need Node.
+- Without `--project-root`, data is written to the current directory at launch. Running from the
+  repository root is fine (`content/`, `output/` and friends are in `.gitignore`); to keep data apart from
+  the code, pass `--project-root <data dir>`.
 
-### 方式二：桌面版（Windows，自行构建）
+### Option 2: desktop build (Windows, build it yourself)
 
-仓库目前**不提供预编译的下载**。可以自己构建（需要先按方式一装好 `.[desktop]`）：
+There are **no prebuilt downloads** at the moment. You can build one yourself (after installing
+`.[desktop]` as in option 1):
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File desktop/build_windows.ps1
 ```
 
-产物是单文件夹 `dist/StoryStudio/`（双击 `StoryStudio.exe`）；装了 Inno Setup 6 时脚本还会出安装包 `dist/installer/StoryStudio-<版本>-setup.exe`（这一步还没实际跑过）。CI 在推送 `v*` tag 或手动触发时也会构建 Windows 包，作为 Actions 产物 `StoryStudio-windows` 上传（不会自动发布 Release；截至 v0.1.0 发布时 CI 还没在 GitHub 上实际跑过）。exe 与安装包都未签名，Windows 可能会提示风险。
+The result is the folder `dist/StoryStudio/` (double-click `StoryStudio.exe`); with Inno Setup 6 installed
+the script also produces the installer `dist/installer/StoryStudio-<version>-setup.exe` (this step has never
+actually run). CI also builds the Windows package when a `v*` tag is pushed or the workflow is started
+manually, and uploads it as the Actions artifact `StoryStudio-windows`. It does not publish a release, and
+as of the v0.1.0 release (2026-09-24) the workflow had not run on GitHub yet. Neither the executable nor the installer is signed, so Windows may
+show a warning.
 
-更详细的步骤（各平台、ffmpeg、台词识别、升级与卸载）见 [安装与部署指南](docs/zh/installation.md)。
+Step-by-step instructions for each platform, ffmpeg, dialogue recognition, upgrading and uninstalling are
+in the [installation guide](docs/en/installation.md).
 
-### 第一次使用
+### First steps
 
-第一次打开（还没有任何项目）时，工作台首页会显示「第一次用」：**配好模型 → 选一个模块开始 → 花钱前都会先问你**。以短剧为例，短剧模块在还没有项目时会显示三步引导：**配好模型 → 拿到一个项目 → 出首帧**。
+On first launch (before any project exists) the workbench home shows a "First time here" guide:
+**Set up models → Pick a module to start → You are asked before anything costs money**. Taking short drama
+as the example: when the Short drama module has no projects yet, it shows a three-step guide:
+**Set up models → Get a project → Generate first frame**.
 
-1. 左栏「🔌 模型设置」：每个角色选来源 → 填地址与密钥 → 保存 → 「测试连接」。生图、语音、视频三个角色都有 OpenRouter 来源；文本角色选「OpenAI 兼容对话接口」，base_url 填 `https://openrouter.ai/api/v1`。这样一个 OpenRouter key 就能配齐四个角色；语音也可以先用免费的 Edge TTS。
-2. 拿到一个项目：短剧首页的「复制示例剧集（不花钱）」或新建项目页顶部的「从示例开始」，把随程序附带的示例剧集（5 镜、有台词、有旁白、有一张插卡）复制成你的项目；也可以「用 AI 起草一集」，让文本模型根据一句话起草整集。其他模块（图片工作台、单条视频、绘本、表情与头像、纪念写真、配乐、播客；剧本工作台除外）的首页也有「复制示例（不花钱）」。
-3. 打开项目 →「开始制作」→ 先给一镜「生成首帧」看风格，满意再整批生成。每次花钱之前都会先告诉你要发几次请求，确认了才提交。
-4. 视频都出来后：「台词识别」（本机 faster-whisper，可选）核对每镜念的是不是台词；「生成后期合成版」把旁白、插卡、画面文字、字幕、混音一次合成。
+1. "🔌 Model settings" in the sidebar: pick a source for each role → enter the URL and key → save →
+   "Test connection". Image, voice and video each have an OpenRouter source; for text pick
+   "OpenAI-compatible chat API" and set its base URL to `https://openrouter.ai/api/v1`, so one OpenRouter
+   key covers all four. Voices can also start with the free Edge TTS.
+2. Get a project: "Copy the sample episode (free)" on the drama home page, or "Start from an example" at
+   the top of the new-project page, copies the bundled sample episode (5 shots, with dialogue, narration and
+   one card) into your own project. Or use "Draft an episode with AI" to let the text model write a whole
+   episode from one sentence. The other module home pages (image studio, single clip, picture book,
+   stickers & avatars, milestone portraits, music, podcast; not the script lab) also offer
+   "Copy the sample (free)".
+3. Open the project → "Start production" → generate a first frame for one shot to check the style, then
+   run the whole batch. Before anything is spent you are told how many requests will be sent, and nothing is
+   submitted until you confirm.
+4. Once all videos are in: "Dialogue recognition" (local faster-whisper, optional) checks that each shot
+   says its lines; "Generate post-production cut" composes narration, cards, on-screen text, subtitles and
+   the mix in one go.
 
-spec 里的模型写 `"@image"` / `"@video"` 表示用模型设置里的模型（示例与 AI 起草默认如此）；写具体模型 id 则以 spec 为准。
+A spec model of `"@image"` / `"@video"` means "use the model from Model settings" (the samples and AI
+drafts do this); a concrete model id in the spec takes precedence.
 
-## 运行与启动参数
+## Running and launch options
 
 ```bash
-storystudio                            # 起本地服务并打开原生窗口（没装 pywebview 时打开系统浏览器）
-storystudio --browser                  # 用系统浏览器
-storystudio --project-root <数据目录>   # 项目与产物放在指定目录
+storystudio                            # start the local server and open a native window (falls back to the browser without pywebview)
+storystudio --browser                  # use the system browser
+storystudio --project-root <data dir>  # keep projects and outputs in a given directory
 storystudio --version
 ```
 
-`python -m studio.desktop` 与 `storystudio` 等价。全部参数：
+`python -m studio.desktop` is equivalent to `storystudio`. All options:
 
-| 参数 | 作用 |
+| Option | Effect |
 |---|---|
-| `--version` | 打印版本号（如 `storystudio 0.1.0`） |
-| `--port PORT` | 指定端口；不指定时在 8756–8799 里自动找空闲端口。指定的端口被占用时报错退出，并给出一个空闲端口（Windows 上还会说明是哪个进程占着） |
-| `--browser` | 用系统浏览器打开，不开原生窗口 |
-| `--no-open` | 只起服务，不打开任何窗口，按 Ctrl+C 结束 |
-| `--no-token` | 不启用本机访问令牌（只建议在调试接口时用） |
-| `--project-root DIR` | 数据目录；桌面版默认 `~/StoryStudio`，开发态默认当前目录 |
-| `--no-plugins` | 不加载插件（排查问题时用） |
+| `--version` | Print the version (for example `storystudio 0.1.0`) |
+| `--port PORT` | Use a fixed port; without it the first free port in 8756–8799 is used. If the given port is taken, the launcher exits with an error and suggests a free port (on Windows it also names the process holding it) |
+| `--browser` | Open in the system browser instead of a native window |
+| `--no-open` | Start the server only, without any window; stop with Ctrl+C |
+| `--no-token` | Disable the local access token (only for debugging the API) |
+| `--project-root DIR` | Data directory; default `~/StoryStudio` for the desktop build and the current directory in development |
+| `--no-plugins` | Do not load plugins (for troubleshooting) |
 
-启动器以 `http://127.0.0.1:<端口>/?token=…` 打开界面，之后接口调用靠 cookie 放行。想用 curl 调接口，加 `X-StoryStudio-Token` 头（值是启动时打印的令牌），或启动时加 `--no-token`（只建议调试时用）。日志在 `~/.storystudio/logs/storystudio.log`（桌面版没有控制台，出问题先看这里）。
+The launcher opens the UI at `http://127.0.0.1:<port>/?token=…`; after that, API calls are allowed through
+a cookie. To call the API with curl, send the `X-StoryStudio-Token` header with the token printed at start-up,
+or start with `--no-token` (debugging only). The log is `~/.storystudio/logs/storystudio.log`; the desktop
+build has no console, so look there first when something goes wrong.
 
-## 模型来源
+## Model sources
 
-五个角色各选一个来源，填自己的地址与密钥：
+Each of the five roles uses one source, with your own URL and key:
 
-| 角色 | 内置来源 |
+| Role | Built-in sources |
 |---|---|
-| 文本（剧本、起草、审稿） | 任何 OpenAI 兼容对话接口（OpenAI / OpenRouter / DeepSeek / 通义 / 豆包 / 本机 Ollama、LM Studio 等） |
-| 生图 | OpenRouter（支持参考图）· OpenAI 兼容 images · 火山方舟 Seedream · 本机 SD WebUI / Forge · 本机 ComfyUI |
-| 语音 | Edge TTS（免费）· OpenAI 兼容 speech · OpenRouter · MiniMax（支持用参考音频克隆音色） |
-| 视频 | OpenRouter（支持首帧）· 火山方舟 Seedance · MiniMax · OpenAI 兼容 videos（LiteLLM 这类网关）· 本机 ComfyUI |
-| 配乐 | 没有内置来源：没有通用的音乐接口形状，需要装一个提供 `music` 角色的插件 |
+| Text (scripts, drafting, reviews) | Any OpenAI-compatible chat API (OpenAI / OpenRouter / DeepSeek / Tongyi / Doubao / local Ollama, LM Studio and others) |
+| Image | OpenRouter (with reference images) · OpenAI-compatible images · Volcengine Ark Seedream · local SD WebUI / Forge · local ComfyUI |
+| Voice | Edge TTS (free) · OpenAI-compatible speech · OpenRouter · MiniMax (voice cloning from reference audio) |
+| Video | OpenRouter (first frame) · Volcengine Ark Seedance · MiniMax · OpenAI-compatible videos (gateways such as LiteLLM) · local ComfyUI |
+| Music | No built-in source: there is no common API shape for music, so you need a plugin that provides the `music` role |
 
-- **统一网关**：用 LiteLLM、new-api、one-api 这类 OpenAI 兼容网关时，在「模型设置」顶部填一次网关地址和 key，测试连接后一键应用到文本 / 生图 / 语音 / 视频四个角色。
-- **本机模型**：有显卡的话可以全程本地跑——「扫描本机」会列出在跑的 Ollama / LM Studio / vLLM / llama.cpp / ComfyUI / SD WebUI 和本机 OpenAI 兼容语音服务，本机地址不要 key、不花钱。扫描只探这些服务在本机的默认端口（手填地址也只接受本机或私有网段），不是网络扫描器。这是可选的路，云端来源什么都不改也照常能用。
-- **插件**：内置来源之外的来源（私有部署的接口、只在本机能跑的命令行工具、还没公开的服务等）由插件提供。插件放在 `~/.storystudio/plugins/<名字>/`，启动时自动加载，核心代码不用改；插件缺失或加载失败时应用照常启动，界面会说清哪个来源用不了、为什么。插件是普通 Python 代码，以你的用户权限运行——只装你信任的插件；想临时不加载插件，设环境变量 `STORYSTUDIO_PLUGINS=off` 或启动时加 `--no-plugins`。写法见 [docs/plugins.md](docs/plugins.md)。
-- **新增内置来源**：在 `src/genkit/adapters/` 加一个适配器并登记到 `settings.ADAPTERS` 与 `adapters.REGISTRY`（两张表必须一致，有测试守着）；异步来源还要在 `genkit.adapters.ASYNC_PREFIXES` 登记任务前缀。步骤见 [架构说明](docs/zh/architecture.md)。
-- **无头部署 / CI**：可以用环境变量 `STORYSTUDIO_<ROLE>_<FIELD>` 临时覆盖设置（ROLE 为 `TEXT` / `IMAGE` / `VOICE` / `VIDEO` / `MUSIC`，FIELD 为 `ADAPTER` / `BASE_URL` / `API_KEY` / `MODEL` / `VOICE`，如 `STORYSTUDIO_TEXT_ADAPTER=openai_chat`），不会写回设置文件；示例见 [.env.example](.env.example)。
+- **Unified gateway**: with an OpenAI-compatible gateway such as LiteLLM, new-api or one-api, enter the
+  gateway URL and key once at the top of Model settings, test it, and apply it to the text / image / voice /
+  video roles in one click.
+- **Local models**: with a capable GPU you can run everything locally. "Scan this machine" lists running
+  Ollama / LM Studio / vLLM / llama.cpp / ComfyUI / SD WebUI servers and local OpenAI-compatible speech
+  servers; local addresses need no key and cost nothing. The scan only probes these services' default local
+  ports (manually entered addresses must be loopback or private-network addresses); it is not a network
+  scanner. This path is optional; cloud sources keep working unchanged.
+- **Plugins**: sources beyond the built-in ones (self-hosted private APIs, command-line tools that only run
+  on your machine, services that are not public yet, and so on) come from plugins. Put a plugin in `~/.storystudio/plugins/<name>/` and it
+  loads at start-up, with no change to the core code. If a plugin is missing or fails to load, the app still
+  starts and the UI explains which source is unavailable and why. Plugins are ordinary Python code running
+  with your user permissions, so only install plugins you trust. To skip plugins temporarily, set
+  `STORYSTUDIO_PLUGINS=off` or start with `--no-plugins`. See [docs/plugins.md](docs/plugins.md) (Chinese).
+- **Adding a built-in source**: add an adapter under `src/genkit/adapters/` and register it in both
+  `settings.ADAPTERS` and `adapters.REGISTRY` (the two tables must match, and a test enforces it); async
+  sources also register a task-id prefix in `genkit.adapters.ASYNC_PREFIXES`. See the
+  [architecture guide](docs/en/architecture.md).
+- **Headless use / CI**: environment variables `STORYSTUDIO_<ROLE>_<FIELD>` override settings for the
+  current process and are never written back. `ROLE` is `TEXT`, `IMAGE`, `VOICE`, `VIDEO` or `MUSIC`;
+  `FIELD` is `ADAPTER`, `BASE_URL`, `API_KEY`, `MODEL` or `VOICE` (for example
+  `STORYSTUDIO_TEXT_ADAPTER=openai_chat`). See [.env.example](.env.example).
 
-各来源的默认地址、字段与全部环境变量见 [配置说明](docs/zh/configuration.md)。各来源的真实联调状态见 [BACKLOG.md](BACKLOG.md) 的「现状盘点」：不少直连适配器只有模拟测试（假客户端），按官方文档与 SDK 签名写成，还没拿真实账号跑过。
+Default URLs, fields and all environment variables are listed in the
+[configuration guide](docs/en/configuration.md). For the real-account status of each source, see "现状盘点"
+(status overview) in [BACKLOG.md](BACKLOG.md): many direct adapters only have fake-client tests, written
+from official documentation and SDK signatures, and have not been run against real accounts.
 
-## 命令行 storyvideo
+## The storyvideo CLI
 
-短剧的生产流程都有命令行（AI 起草、海报、交付包、工艺审稿目前只在界面里）。剧集号对应数据目录下的 `content/story_video/<剧集号>.json`（在界面里「从示例开始」复制出来的第一个是 `DEMO-1`）：
+The drama production pipeline is also available on the command line (AI drafting, posters, delivery packs
+and craft reviews are UI-only for now). An episode id maps to
+`content/story_video/<id>.json` in the data directory (the first episode copied with "Start from an example"
+in the UI is `DEMO-1`):
 
 ```bash
-storyvideo preview DEMO-1                    # 只渲染每镜编译后的提示词与时长预算，不锁定、不花钱
-storyvideo prepare DEMO-1                    # 校验、建计划、冻结
-storyvideo run DEMO-1 --through frames       # 出首帧（--no-wait 只提交不等）
+storyvideo preview DEMO-1                    # render each shot's compiled prompt and duration budget; no lock, no cost
+storyvideo prepare DEMO-1                    # validate, plan and freeze
+storyvideo run DEMO-1 --through frames       # first frames (--no-wait submits without waiting)
 storyvideo review DEMO-1 frames --decision pass
 storyvideo run DEMO-1 --through videos
-storyvideo asr-qc DEMO-1 --record-retakes    # 台词识别闸（可选，需要 faster-whisper）
+storyvideo asr-qc DEMO-1 --record-retakes    # dialogue-recognition gate (optional, needs faster-whisper)
 storyvideo review DEMO-1 videos --decision pass
-storyvideo run DEMO-1 --through assemble     # 本地装配成片，接下来是成片审片闸
+storyvideo run DEMO-1 --through assemble     # assemble the cut locally; the final review gate comes next
 storyvideo review DEMO-1 final --decision pass
-storyvideo post DEMO-1                       # 后期层：旁白 + 插卡 + 画面文字 + 混音
-storyvideo amend DEMO-1                      # 冻结后只改了后期块时接受修订
-storyvideo retry-failed DEMO-1               # 把平台瞬时失败的任务重置，下次 run 重新提交
+storyvideo post DEMO-1                       # post layers: narration + cards + on-screen text + mix
+storyvideo amend DEMO-1                      # accept a post-freeze edit limited to post-production blocks
+storyvideo retry-failed DEMO-1               # reset jobs that failed for transient platform reasons; the next run resubmits them
 storyvideo status DEMO-1 --json
 ```
 
-- 审片闸没通过时，`run` 不会越过它：比如视频还没 `review … videos --decision pass` 就 `run --through assemble`，会以退出码 `4` 停下。
-- 只有 `run` 会提交付费的生成任务（记进账本）。`post` 合成旁白时调用语音来源：配了 Edge TTS 以外的语音来源时一般用它（按该来源计费），没配时用免费的 Edge TTS（要联网）；`reconcile` / `abandon` 会查询来源的任务历史；`asr-qc` 第一次运行会下载识别模型。其余命令都是本地操作。
-- 退出码：`0` 成功，`2` 输入或运行错误，`3` 被安全闸拦下，`4` 停在未通过的审片闸，`130` 被中断。
-- 命令行默认的数据目录是环境变量 `STORYSTUDIO_PROJECT_ROOT`，没设时是代码根目录（从源码装就是仓库根）；界面用的是别的目录（比如桌面版的 `~/StoryStudio`）时，每条命令加 `--project-root <数据目录>`。
+- `run` never skips a review gate that has not passed: for example, `run --through assemble` before
+  `review … videos --decision pass` stops with exit code `4`.
+- Only `run` submits paid generation jobs (recorded in the ledger). `post` calls the voice source for
+  narration: if a voice source other than Edge TTS is configured it is normally used and billed as usual;
+  otherwise the free Edge TTS is used (needs the network). `reconcile` / `abandon` query the provider's task
+  history, and the first `asr-qc` run downloads the recognition model. All other commands are local.
+- Exit codes: `0` success, `2` input or runtime error, `3` blocked by a safety gate, `4` stopped at a
+  review gate that has not passed, `130` interrupted.
+- The CLI's default data directory is `STORYSTUDIO_PROJECT_ROOT`, or the code root when it is unset (the
+  repository root for a source install). If the UI uses another directory (for example `~/StoryStudio` for
+  the desktop build), pass `--project-root <data dir>` to every command.
 
-崩溃恢复、防重复扣费、审片裁决与修订的细节见 [STORYVIDEO_RUNTIME.md](STORYVIDEO_RUNTIME.md)；镜头库、风格库、题材卡等随包数据的说明见 [skills/README.md](skills/README.md)。
+Crash recovery, double-charge protection, review decisions and revisions are covered in
+[STORYVIDEO_RUNTIME.md](STORYVIDEO_RUNTIME.md) (Chinese); the bundled data (shot library, style library,
+genre cards and so on) is described in [skills/README.md](skills/README.md) (Chinese).
 
-## 打包桌面客户端
+## Building the desktop app
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File desktop/build_windows.ps1
 ```
 
-脚本依次做：前端构建（`PATH` 里有 npm 时）→ PyInstaller 出单文件夹 `dist/StoryStudio/` → 包内容自检（`desktop/verify_bundle.py`）→ Inno Setup 出安装包 `dist/installer/StoryStudio-<版本>-setup.exe`（装了 Inno Setup 6 才有）。只要单文件夹也可以直接 `python -m PyInstaller desktop/storystudio.spec --noconfirm`。CI（`.github/workflows/ci.yml`）在打 `v*` tag 或手动触发时产出 Windows 包。
+The script builds the frontend (when npm is on `PATH`) → runs PyInstaller to produce the folder
+`dist/StoryStudio/` → checks the bundle contents (`desktop/verify_bundle.py`) → runs Inno Setup to produce
+`dist/installer/StoryStudio-<version>-setup.exe` (only if Inno Setup 6 is installed). If you only need the
+folder, run `python -m PyInstaller desktop/storystudio.spec --noconfirm`. CI
+(`.github/workflows/ci.yml`) builds the Windows package on `v*` tags or manual runs.
 
-- 包里只放运行要用的东西：`src/` 下的代码、已构建的界面、随包的技能数据（镜头库、风格库、风格卡、审稿清单等）、示例项目、`LICENSE` 与第三方声明（`docs/third-party-notices.md`）；白名单在 `desktop/bundle_manifest.py`。`tests/`、`frontend/` 源码、插件都不进包（插件在用户目录里，启动时从磁盘加载）。
-- `ffmpeg.exe` / `ffprobe.exe` 默认不随包：放进 `dist/StoryStudio/` 或它下面的 `ffmpeg/` 子目录，或装到系统 `PATH`。想让安装包带上，打包前放进 `desktop/ffmpeg/`（注意 ffmpeg 自己的许可证）。
-- 打包版的用户数据默认在 `~/StoryStudio`，设置在 `~/.storystudio`，卸载不碰这两处。
-- 分发前需要自己签名；macOS 脚本 `desktop/build_macos.sh` 已写好但还没在 Mac 上跑过。
+- The package only contains what the app needs at run time: the code under `src/`, the built UI, bundled
+  skill data (shot library, style library, style cards, review checklists and so on), the sample projects,
+  `LICENSE` and the third-party notices (`docs/third-party-notices.md`). The whitelist is
+  `desktop/bundle_manifest.py`. `tests/`, the `frontend/` sources and plugins are never bundled (plugins
+  live in the user directory and load from disk at start-up).
+- `ffmpeg.exe` / `ffprobe.exe` are not bundled by default: put them into `dist/StoryStudio/` or its
+  `ffmpeg/` subfolder, or install them on the system `PATH`. To ship them in the installer, place them in
+  `desktop/ffmpeg/` before building (mind ffmpeg's own licence).
+- The desktop build keeps user data in `~/StoryStudio` and settings in `~/.storystudio`; uninstalling
+  never touches either.
+- Sign the binaries yourself before distributing them. The macOS script `desktop/build_macos.sh` exists but
+  has never been run on a Mac.
 
-细节（台词识别的可选安装、无窗口模式、签名）见 [desktop/README.md](desktop/README.md) 和 [安装与部署指南](docs/zh/installation.md)。
+Details (optional dialogue-recognition install, headless mode, signing) are in
+[desktop/README.md](desktop/README.md) (Chinese) and the [installation guide](docs/en/installation.md).
 
-## 开发
+## Development
 
 ```bash
 pip install -e ".[desktop,dev]"
 pytest -q
-python scripts/refresh_prompt_canary.py      # 改了提示词编译器后核对黄金输出
+python scripts/refresh_prompt_canary.py      # check golden prompt output after changing the prompt compilers
 ```
 
-界面在 `frontend/`（Vite + Vue 3），构建产物提交在 `src/webui/static/app/`。改了界面要重新构建再提交（CI 会检查两者一致）：
+The UI lives in `frontend/` (Vite + Vue 3) and its build output is committed to `src/webui/static/app/`.
+After changing the UI, rebuild and commit the output (CI checks that the two match):
 
 ```bash
 cd frontend
@@ -269,90 +382,128 @@ npm test          # Vitest
 npm run build
 ```
 
-前端热更新：先 `storystudio --no-open --no-token --port 8765` 起后端，再在 `frontend/` 下 `npm run dev`，打开 <http://localhost:5173/app/>（`/api` 反代到 8765）。旧版单页界面仍在 `/legacy`。
+Hot reload: start the backend with `storystudio --no-open --no-token --port 8765`, then run `npm run dev` in
+`frontend/` and open <http://localhost:5173/app/> (`/api` is proxied to port 8765). The old single-page UI is
+still served at `/legacy`.
 
-界面语言：侧栏底部可切中文 / English；英文字典在 `frontend/src/locales/`，后端文案规则在 `src/webui/i18n_rules.py`，缺翻译会原样显示中文。
+UI language: switch between Chinese and English at the bottom of the sidebar. English strings live in
+`frontend/src/locales/`, backend text rules in `src/webui/i18n_rules.py`; a missing translation shows the
+Chinese original.
 
-目录：
+Repository layout:
 
-| 路径 | 内容 |
+| Path | Contents |
 |---|---|
-| `src/genkit` | 模型契约、设置、适配器、路由、账本、插件加载、版本 |
-| `src/storyvideo` | 短剧：spec、提示词编译、运行时、审片、台词识别、装配、后期层 |
-| `src/webui` | FastAPI 服务与各模块接口 |
-| `src/studio` | 桌面启动器 |
-| `src/podcast` / `src/script` / `src/picturebook` / `src/imageset` / `src/clip` / `src/music` | 其余模块 |
-| `src/imagecraft` | 出图风格卡与图像方言（图片集、绘本、单条视频、海报共用） |
-| `frontend/` | 界面源码 |
-| `skills/` | 随包的镜头库、风格库、题材卡、风格卡、审稿清单等数据与写作规范 |
-| `examples/` | 随程序附带的示例项目 |
-| `tests/` | 后端测试（不进安装包） |
-| `desktop/` | 打包脚本、PyInstaller spec、安装包脚本、包内容自检 |
+| `src/genkit` | Model contracts, settings, adapters, routing, ledger, plugin loading, version |
+| `src/storyvideo` | Short drama: spec, prompt compilation, runtime, reviews, dialogue recognition, assembly, post layers |
+| `src/webui` | FastAPI server and the per-module APIs |
+| `src/studio` | Desktop launcher |
+| `src/podcast` / `src/script` / `src/picturebook` / `src/imageset` / `src/clip` / `src/music` | The other modules |
+| `src/imagecraft` | Image style cards and image prompt dialects (shared by image sets, picture books, single clips and posters) |
+| `frontend/` | UI sources |
+| `skills/` | Bundled data: shot library, style library, genre cards, style cards, review checklists and writing rules |
+| `examples/` | Sample projects shipped with the app |
+| `tests/` | Backend tests (not bundled) |
+| `desktop/` | Packaging scripts, PyInstaller spec, installer script, bundle checks |
 
-版本号只在 `src/genkit/version.py` 改一处，更新记录见 [CHANGELOG.md](CHANGELOG.md)。提交代码前请看 [参与贡献](CONTRIBUTING.md) 和 [AGENTS.md](AGENTS.md) 里的仓库规则。
+The version number lives only in `src/genkit/version.py`; see [CHANGELOG.md](CHANGELOG.md) (Chinese) for
+changes. Before sending code, read the [contributing guide](CONTRIBUTING.md) and the repository rules in
+[AGENTS.md](AGENTS.md).
 
-## 文档导航
+## Documentation
 
-全部文档的中英索引在 [docs/README.md](docs/README.md)。
+The bilingual index of all documents is [docs/README.md](docs/README.md).
 
-| 文档 | 内容 |
+| Document | Contents |
 |---|---|
-| [安装与部署](docs/zh/installation.md) | 环境要求、从源码安装、桌面包构建、ffmpeg 与台词识别、升级与卸载 |
-| [架构说明](docs/zh/architecture.md) | 分层、模块、数据流、账本与任务 |
-| [设计说明](docs/zh/design.md) | 设计原则与关键取舍 |
-| [配置说明](docs/zh/configuration.md) | 模型角色与来源、设置文件、环境变量、目录结构 |
-| [常见问题](docs/zh/faq.md) | 使用和排障中的常见问题 |
-| [STORYVIDEO_RUNTIME.md](STORYVIDEO_RUNTIME.md) | 短剧命令行与运行时手册 |
-| [docs/plugins.md](docs/plugins.md) | 插件写法（接口 v1，实验性） |
-| `docs/*-spec.md` 等（索引见 [docs/README.md](docs/README.md)） | 各模块的规格契约：单条视频、图片集、图片工作台、绘本、配乐、播客、剧本工作台、本机模型，以及出图风格卡、长单镜提示词写法 |
-| [desktop/README.md](desktop/README.md) | 打包细节 |
-| [DESIGN.md](DESIGN.md) / [ARCHITECTURE.md](ARCHITECTURE.md) | 完整的设计记录与架构原文 |
-| [CHANGELOG.md](CHANGELOG.md) / [BACKLOG.md](BACKLOG.md) | 更新记录；待做项与现状盘点 |
+| [Installation](docs/en/installation.md) | Requirements, source install, desktop builds, ffmpeg and dialogue recognition, upgrading and uninstalling |
+| [Architecture](docs/en/architecture.md) | Layers, modules, data flow, ledger and tasks |
+| [Design](docs/en/design.md) | Design principles and key trade-offs |
+| [Configuration](docs/en/configuration.md) | Model roles and sources, settings file, environment variables, directory layout |
+| [FAQ](docs/en/faq.md) | Common questions about usage and troubleshooting |
+| [STORYVIDEO_RUNTIME.md](STORYVIDEO_RUNTIME.md) | Short-drama CLI and runtime manual (Chinese) |
+| [docs/plugins.md](docs/plugins.md) | Writing plugins (API v1, experimental; Chinese) |
+| Module specs in `docs/` (indexed in [docs/README.md](docs/README.md)) | Per-module contracts: single clip, image sets, image studio, picture book, music, podcast, script lab, local models, plus image style cards and long single-shot prompt patterns (Chinese) |
+| [desktop/README.md](desktop/README.md) | Packaging details (Chinese) |
+| [DESIGN.md](DESIGN.md) / [ARCHITECTURE.md](ARCHITECTURE.md) | Full design log and architecture notes (Chinese) |
+| [CHANGELOG.md](CHANGELOG.md) / [BACKLOG.md](BACKLOG.md) | Change log; backlog and status overview (Chinese) |
 
-## 项目状态与已知限制
+## Project status and known limitations
 
-v0.1.0 是第一个 tag。能说清楚的现状如下：
+v0.1.0 is the first tag. This is what can honestly be said about it:
 
-**已验证**
+**Verified**
 
-- 用真实文本模型走通了播客从新建、起草、审稿到配音混音与导出的整条流程（文本模型经 OpenAI 兼容接口，配音用 edge-tts）。
-- Windows x64 上打过 PyInstaller 包，打包版能开窗，无窗口模式接口可用。
-- Edge TTS（微软的在线服务）实际合成成功；短剧的装配与后期合成用真实 ffmpeg 跑过（测试里）。
+- The podcast pipeline has been run end to end with a real text model (via an OpenAI-compatible API) and
+  edge-tts voices: create, draft, review, voice, mix and export.
+- A PyInstaller package has been built on Windows x64; the packaged app opens its window and the headless
+  mode serves the API.
+- Edge TTS synthesis (Microsoft's online service) has been run successfully; drama assembly and
+  post-production have been run with real ffmpeg (in tests).
 
-**未验证或有限制**
+**Not verified, or limited**
 
-- 一部完整长度短片的端到端出片与后期合成还没用真实模型跑过。
-- 多数直连来源（OpenRouter、火山方舟、MiniMax、OpenAI 的 images / speech / videos）只有模拟测试（假客户端），按官方文档与 SDK 签名写成；音色克隆还没用真实账号试过；本机模型没在真实显卡上验证过。
-- 各种提示词方言（如 `gpt_image`、`nano_banana`、`minimax-h3`、`seedance`）没有对着真实模型做过对比。
-- 打包版里的 faster-whisper 与后期合成没在真实视频上验证过。
-- macOS 打包脚本没在 Mac 上跑过；Linux 没有打包，Linux 上的 pywebview 窗口没测过；Python 3.10 与 3.12+ 没测过。
-- CI 配置了 Linux / Windows 的测试与 Windows 打包，截至 v0.1.0 发布时（2026-09-24）还没在 GitHub 上实际跑过；Inno Setup 那一步没在本地跑过；安装包与 exe 都没签名。
-- 配乐角色没有内置来源，要用配乐模块的「生成」需要插件；各模块上传本地音频做配乐不受影响。
-- 插件接口 v1 是实验性的，1.0 之前可能调整。
-- 内置来源不支持查询任务历史：短剧里「提交结果未知」的任务（比如提交途中网络超时）没法原地核对或放弃，只能到来源控制台核对后开新版本（见 [STORYVIDEO_RUNTIME.md](STORYVIDEO_RUNTIME.md) §6）。
+- A full-length short drama has not yet been generated and post-produced end to end with real models.
+- Most direct sources (OpenRouter, Volcengine Ark, MiniMax, OpenAI images / speech / videos) only have
+  fake-client tests written from official documentation and SDK signatures; voice cloning has never run for
+  real; local models have not been run on real GPUs.
+- The prompt dialects (such as `gpt_image`, `nano_banana`, `minimax-h3`, `seedance`) have not been compared
+  against real models.
+- faster-whisper and post-production inside the packaged app have not been verified on real videos.
+- The macOS packaging script has never run on a Mac; there is no Linux package and pywebview on Linux is
+  untested; Python 3.10 and 3.12+ are untested.
+- CI is configured for Linux / Windows tests and Windows packaging but, as of the v0.1.0 release (2026-09-24), had not run on GitHub yet; the Inno
+  Setup step has never run locally; installers and executables are unsigned.
+- The music role has no built-in source, so the Music module's "generate" needs a plugin; uploading your own
+  audio as music in other modules works regardless.
+- Plugin API v1 is experimental and may change before 1.0.
+- Built-in sources cannot look up task history, so a drama job whose submission result is unknown (for
+  example a network timeout mid-submission) cannot be reconciled or abandoned in place. Check the provider's
+  console and open a new revision instead (see [STORYVIDEO_RUNTIME.md](STORYVIDEO_RUNTIME.md) §6).
 
-**测试**：后端 3000 多个 pytest 用例、前端 50 多个 Vitest 测试文件，另有提示词金丝雀守着提示词编译的输出。发布前（2026-09-24）在 Windows + Python 3.11 上跑的全量结果：后端 pytest 3214 条、前端 vitest 387 条全部通过；截至发布时 CI 还没在 GitHub 上跑过。
+**Tests:** over 3,000 backend pytest cases, more than 50 Vitest test files for the frontend, and a prompt
+canary guarding the output of the prompt compilers. The full run before release (2026-09-24, Windows +
+Python 3.11): 3,214 pytest and 387 Vitest tests, all passing. As of the release, CI had not run on GitHub yet.
 
-发布前做过两轮自查：发布前体检 87 条发现中 86 条成立并已修复（[docs/release-audit-2026-09-22.md](docs/release-audit-2026-09-22.md)），安全自查 19 条发现全部修复并补了回归测试（[docs/security-review-2026-09-23.md](docs/security-review-2026-09-23.md)）。逐项的已验证 / 未验证见 [CHANGELOG.md](CHANGELOG.md) 和 [BACKLOG.md](BACKLOG.md)。
+Two self-reviews were done before release: a release audit in which 86 of 87 findings were confirmed and
+fixed ([docs/release-audit-2026-09-22.md](docs/release-audit-2026-09-22.md)), and a security review whose
+19 findings were all fixed with regression tests
+([docs/security-review-2026-09-23.md](docs/security-review-2026-09-23.md)); both are in Chinese. Item-by-item
+verified / unverified notes are in [CHANGELOG.md](CHANGELOG.md) and [BACKLOG.md](BACKLOG.md).
 
-## 参与贡献
+## Contributing
 
-欢迎提 issue 和 PR。开始之前请看：
+Issues and pull requests are welcome. Before you start, please read:
 
-- [参与贡献指南](CONTRIBUTING.md)（[English](CONTRIBUTING.en.md)）：开发环境、测试、提示词金丝雀、前端构建与提交规则。
-- [安全策略](SECURITY.md)：发现安全问题请通过仓库的 GitHub 私密漏洞报告（Security Advisories）提交，不要开公开 issue。
-- [行为准则](CODE_OF_CONDUCT.md)：采用 Contributor Covenant 2.1。
+- The [contributing guide](CONTRIBUTING.md) ([中文](CONTRIBUTING.zh-CN.md)): development setup, tests, the
+  prompt canary, frontend builds and commit rules.
+- The [security policy](SECURITY.md): report vulnerabilities privately through the repository's GitHub
+  private vulnerability reporting (Security Advisories), not in a public issue.
+- The [code of conduct](CODE_OF_CONDUCT.md): Contributor Covenant 2.1.
 
-## 致谢
+## Acknowledgements
 
-短剧模块的题材卡、形态卡、连续性锁、参考图用途、观众可见性、交付面、重拍处置等判据参考了 [zenstory-ai/drama-skills](https://github.com/zenstory-ai/drama-skills)（MIT），对照与取舍见 [docs/drama-skills-gap.md](docs/drama-skills-gap.md)。以取判据为主、不取它的语法；题材卡多数字段摘录自原卡原句（节选与压缩），置信度与依据照录原文，起草与视频提示词、静态检查、界面文案、测试夹具与设计文档里也用了一些原句（逐项见声明）。它的 MIT 许可与版权声明见 [docs/third-party-notices.md](docs/third-party-notices.md)（这份声明也随安装包分发）。
+The drama module's genre cards, form cards, continuity locks, reference-image roles, audience visibility,
+delivery surfaces, retake handling and similar criteria draw on
+[zenstory-ai/drama-skills](https://github.com/zenstory-ai/drama-skills) (MIT); the comparison and the choices made are in [docs/drama-skills-gap.md](docs/drama-skills-gap.md)
+(Chinese). The project mainly adopts its criteria, not its syntax. Most fields of the genre cards are
+excerpts of the original cards' sentences (abridged and condensed), with confidence and basis copied
+verbatim; some original sentences also appear in the drafting and video prompts, static checks, UI text,
+test fixtures and design documents (itemised in the notices). Its MIT licence and copyright notice are in
+[docs/third-party-notices.md](docs/third-party-notices.md), which also ships with the desktop package.
 
-短剧的接缝（入口 / 出口状态）、表演与视线、镜头设计几条规则的思路参考了 [waoowaoo](https://github.com/waooAI/waoowaoo)（Elastic License 2.0）的视频导演规范，提示词金丝雀借了它的 prompt-canary 做法；没有使用它的代码、提示词或文字，所以只作致谢。
+The ideas behind the drama rules for seams (entry / exit state), performance and eyelines, and shot design
+come from the video-director guidelines of [waoowaoo](https://github.com/waooAI/waoowaoo) (Elastic License
+2.0), and the prompt canary borrows its prompt-canary approach. None of its code, prompts or text is used, so
+it is credited here only.
 
-随包数据各文件的来源与许可（哪些是摘录、哪些是本项目自己写的）见 [skills/README.md](skills/README.md) 的「来源与许可」。
+Where each bundled data file comes from, and which ones are excerpts versus written for this project, is
+listed under "来源与许可" (sources and licences) in [skills/README.md](skills/README.md).
 
-本项目还建立在许多开源项目之上，包括 FastAPI、Uvicorn、Pydantic、Vue、Vite、pywebview、PyInstaller、Pillow、edge-tts、faster-whisper 和 FFmpeg（FFmpeg 不随包分发）。
+This project also builds on many open-source projects, including FastAPI, Uvicorn, Pydantic, Vue, Vite,
+pywebview, PyInstaller, Pillow, edge-tts, faster-whisper and FFmpeg (FFmpeg is not bundled).
 
-## 许可证
+## License
 
-[MIT](LICENSE)，版权所有 © 2026 avioralon。随包分发的第三方内容及其许可声明见 [docs/third-party-notices.md](docs/third-party-notices.md)。
+[MIT](LICENSE), Copyright © 2026 avioralon. Third-party content shipped with the app and its licence notices
+are listed in [docs/third-party-notices.md](docs/third-party-notices.md).

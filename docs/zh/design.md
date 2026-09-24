@@ -1,4 +1,4 @@
-中文 | [English](../en/design.md)
+[English](../en/design.md) | 中文
 
 # 设计特点
 

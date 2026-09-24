@@ -1,4 +1,4 @@
-中文 | [English](../en/faq.md)
+[English](../en/faq.md) | 中文
 
 # 常见问题
 
@@ -239,4 +239,4 @@ Linux 的 Noto Sans CJK / 文泉驿等），找不到时健康检查和后期面
 
 ### 想参与开发
 
-见 [参与贡献](../../CONTRIBUTING.md)。参与之前请先读 [行为准则](../../CODE_OF_CONDUCT.md)。
+见 [参与贡献](../../CONTRIBUTING.zh-CN.md)。参与之前请先读 [行为准则](../../CODE_OF_CONDUCT.md)。

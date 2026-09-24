@@ -1,4 +1,4 @@
-[中文](../zh/faq.md) | English
+English | [中文](../zh/faq.md)
 
 # FAQ
 
@@ -281,4 +281,4 @@ template, and include:
 
 ### I'd like to contribute
 
-See [CONTRIBUTING.en.md](../../CONTRIBUTING.en.md), and please read the [Code of Conduct](../../CODE_OF_CONDUCT.md) first.
+See [CONTRIBUTING.md](../../CONTRIBUTING.md), and please read the [Code of Conduct](../../CODE_OF_CONDUCT.md) first.

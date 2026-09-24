@@ -1,6 +1,6 @@
 # Installation and deployment
 
-[中文](../zh/installation.md) | English
+English | [中文](../zh/installation.md)
 
 This guide covers installing and running Content Cook, setting up a development environment,
 building the Windows package yourself, and what to keep in mind for deployment, backups, upgrades,
@@ -378,7 +378,7 @@ npm run build                               # builds into src/webui/static/app/
   confirmed the change is intended, and explain why in the commit message.
 - After changing UI sources, run `npm run build` again and commit `src/webui/static/app/` as well: CI rebuilds it
   and fails if it does not match the sources.
-- Other contribution rules: [CONTRIBUTING.en.md](../../CONTRIBUTING.en.md) and [AGENTS.md](../../AGENTS.md).
+- Other contribution rules: [CONTRIBUTING.md](../../CONTRIBUTING.md) and [AGENTS.md](../../AGENTS.md).
 
 ### 5.4 CI
 

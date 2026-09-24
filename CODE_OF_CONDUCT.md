@@ -1,5 +1,8 @@
 English | [中文（官方译本）](https://www.contributor-covenant.org/zh-cn/version/2/1/code_of_conduct/)
 
+> This project adopts the Contributor Covenant 2.1. The English original follows; see the link above for the official
+> Chinese translation. If they differ, the English original prevails.
+>
 > 本项目采用 Contributor Covenant 2.1 行为准则。下面是英文原文；中文请看官方译本：
 > <https://www.contributor-covenant.org/zh-cn/version/2/1/code_of_conduct/>。两者如有出入，以英文原文为准。
 

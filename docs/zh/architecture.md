@@ -1,4 +1,4 @@
-中文 | [English](../en/architecture.md)
+[English](../en/architecture.md) | 中文
 
 # 技术架构
 
@@ -619,7 +619,7 @@ CI（`.github/workflows/ci.yml`）在 Ubuntu 和 Windows 上用 Python 3.11 跑 
 - 本机模型没有在真实硬件上验证过。`pyproject.toml` 要求 Python 3.10 及以上，但只在 3.11 上跑过，3.10 和 3.12+ 没测过。
 - 详见 [CHANGELOG.md](../../CHANGELOG.md) 的「已验证 / 未验证」和 [BACKLOG.md](../../BACKLOG.md)。
 
-贡献代码时怎么跑这些测试，见 [贡献指南](../../CONTRIBUTING.md)。
+贡献代码时怎么跑这些测试，见 [贡献指南](../../CONTRIBUTING.zh-CN.md)。
 
 ## 14. 延伸阅读
 

@@ -1,6 +1,6 @@
 # 安装与部署
 
-中文 | [English](../en/installation.md)
+[English](../en/installation.md) | 中文
 
 本文讲怎样安装和运行 Content Cook（内容创作工作台），怎样搭开发环境、自己打 Windows 安装包，
 以及部署、备份、升级、卸载和排障时要注意什么。模型怎么接，见[配置指南](configuration.md)。
@@ -337,7 +337,7 @@ npm run build                               # 构建到 src/webui/static/app/
   有差异就以非零退出。改了提示词编译器、镜头库或风格库，前后都要跑；确认是有意的改动后才用 `--update` 接受新输出，
   并在提交说明里写清理由。
 - 改了界面源码要重新 `npm run build`，把 `src/webui/static/app/` 一起提交：CI 会重新构建，并检查它跟源码一致。
-- 其他贡献规则见 [CONTRIBUTING.md](../../CONTRIBUTING.md) 和 [AGENTS.md](../../AGENTS.md)。
+- 其他贡献规则见 [参与贡献](../../CONTRIBUTING.zh-CN.md) 和 [AGENTS.md](../../AGENTS.md)。
 
 ### 5.4 CI
 

@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - name: 文档 / Documentation
+  - name: Documentation / 文档
     url: https://github.com/aviorAlon/content-cook/blob/main/docs/README.md
-    about: 安装、配置、常见问题 / Installation, configuration and FAQ
-  - name: 安全问题 / Security vulnerability
+    about: Installation, configuration and FAQ / 安装、配置、常见问题
+  - name: Security vulnerability / 安全问题
     url: https://github.com/aviorAlon/content-cook/security/advisories/new
-    about: 请私下报告，不要开公开 issue / Report it privately instead of opening a public issue
+    about: Report it privately instead of opening a public issue / 请私下报告，不要开公开 issue
